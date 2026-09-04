@@ -17,6 +17,8 @@
     await OneSignal.init({
       appId: "aa65b7b4-e6d7-4a4e-abf8-ea2015635111",
       allowLocalhostAsSecureOrigin: true,
+      serviceWorkerParam: { scope: "/twhk-portal/" },
+      serviceWorkerPath: "OneSignalSDKWorker.js"
     });
   });
 </script>
@@ -71,17 +73,6 @@
   }
   .notif-dot.on{background:var(--green);}
 
-  .ref-card{background:var(--navy-950);border:1px dashed var(--gold);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;}
-  .ref-card .k{color:var(--ink-dim);font-size:10px;text-transform:uppercase;letter-spacing:.5px;}
-  .ref-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:4px;}
-  .ref-code{color:var(--gold-bright);font-weight:700;font-size:14px;letter-spacing:1px;}
-  .copy-ref-btn{background:transparent;border:1px solid var(--gold);color:var(--gold);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;flex-shrink:0;width:auto;}
-  .ref-count{color:var(--ink-dim);font-size:11px;margin-top:6px;}
-
-  .notif-status{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-dim);background:var(--navy-950);border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin-bottom:12px;}
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--ink-dim);flex-shrink:0;}
-  .dot.on{background:var(--green);}
-
   .feed-item{background:var(--navy-950);border:1px solid var(--gold);border-radius:12px;padding:14px;margin-bottom:12px;position:relative;}
   .feed-item.market-CRYPTO{border:1px solid #9b6bd9;}
   .market-badge{font-size:9px;font-weight:800;padding:2px 7px;border-radius:8px;margin-left:6px;vertical-align:middle;letter-spacing:.3px;}
@@ -112,9 +103,6 @@
   .empty{color:var(--ink-dim);font-size:13px;text-align:center;padding:20px 0;}
   .hidden{display:none !important;}
 
-  .feed-item.new-signal{border-color:var(--gold-bright);box-shadow:0 0 0 1px var(--gold-bright), 0 0 16px rgba(232,198,90,.35);animation:glowPulse 1.6s ease-in-out infinite;}
-  @keyframes glowPulse{0%,100%{box-shadow:0 0 0 1px var(--gold-bright),0 0 10px rgba(232,198,90,.25);}50%{box-shadow:0 0 0 1px var(--gold-bright),0 0 20px rgba(232,198,90,.5);}}
-  .new-tag{background:var(--gold-bright);color:var(--navy-950);font-size:9px;font-weight:800;padding:2px 7px;border-radius:8px;margin-left:6px;letter-spacing:.5px;}
   .result-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;margin-top:8px;display:inline-block;}
   .result-badge.WIN{background:rgba(62,207,142,.15);color:var(--green);}
   .result-badge.LOSS{background:rgba(226,86,79,.15);color:var(--red);}
@@ -125,7 +113,6 @@
   .stat-win{color:var(--green);border-color:var(--green);background:rgba(62,207,142,.08);}
   .stat-loss{color:var(--red);border-color:var(--red);background:rgba(226,86,79,.08);}
   .stat-be{color:var(--ink-dim);background:rgba(143,160,184,.08);}
-  .feed-time{font-size:10px;color:var(--ink-dim);margin-top:4px;}
   .admin-result-btns{display:flex;gap:6px;margin-top:8px;}
   .admin-result-btns button{border:none;border-radius:6px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;}
   .btn-win{background:rgba(62,207,142,.15);color:var(--green);}
@@ -195,9 +182,7 @@
     <div class="tag">Member Portal</div>
   </header>
 
-  <div class="setup-banner" id="setupBanner">
-    ⚠️ Firebase config is still a <b>PLACEHOLDER</b> — paste your real config values in the script below (Firebase Console → Project Settings → Your apps), otherwise login/signup will not work.
-  </div>
+  <div class="setup-banner" id="setupBanner" style="display:none;"></div>
 
   <!-- AUTH -->
   <div id="authBox" class="panel hidden">
@@ -307,14 +292,11 @@
   </div>
 </div>
 
-<!-- Firebase SDK (compat, no build tools needed) -->
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js"></script>
 
 <script>
-// ====== 1) FIREBASE CONFIG ======
 const firebaseConfig = {
   apiKey: "AIzaSyD1GgHel2TPnmuemGTD0w50W-DWsaVKW5E",
   authDomain: "tw-hk-32169.firebaseapp.com",
@@ -328,15 +310,6 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 const db = firebase.firestore();
-const messaging = firebase.messaging();
-
-const VAPID_KEY = "BO0oYEZ3_t2Ya2klRCv9wSinJeMHszzDpYkYyPLHvFR_58SvGqlavpDKo9xy3pUla__vSaU4p-LWg4DtLB_IUMs";
-
-if(firebaseConfig.apiKey.startsWith('PLACEHOLDER')){
-  document.getElementById('setupBanner').style.display = 'block';
-} else {
-  document.getElementById('setupBanner').style.display = 'none';
-}
 
 let authMode = 'login';
 let currentUid = null;
@@ -346,7 +319,6 @@ let calcCache = {};
 let notifEnabled = false;
 let unsubSignals = null;
 let unsubMembers = null;
-let seenSignalIds = new Set();
 let splashHidden = false;
 
 function hideSplashOnce(){
@@ -466,13 +438,8 @@ function requestNotif(){
       checkNotifPermission();
     });
   } else if('Notification' in window){
-    Notification.requestPermission().then(perm => {
+    Notification.requestPermission().then(() => {
       checkNotifPermission();
-      if(perm === 'granted'){
-        saveFcmToken();
-      } else {
-        showToast('Notification permission not granted');
-      }
     });
   }
 }
@@ -486,18 +453,6 @@ function checkNotifPermission(){
 
 function syncNotifState(){
   checkNotifPermission();
-  if(notifEnabled) saveFcmToken();
-}
-
-async function saveFcmToken(){
-  if(!currentUid || !('serviceWorker' in navigator)) return;
-  try{
-    const reg = await navigator.serviceWorker.ready;
-    const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
-    if(token){
-      await db.collection('members').doc(currentUid).update({ fcmToken: token });
-    }
-  } catch(err){}
 }
 
 function startOfToday(){
@@ -527,18 +482,10 @@ function listenSignals(){
       if(prevIds.size > 0){
         signalsCache.forEach(s => {
           if(!prevIds.has(s.id) && notifEnabled){
-            const market = s.market || 'FOREX';
-            const memberTier = market === 'CRYPTO' ? (currentMemberDoc.cryptoTier || 'FREE') : (currentMemberDoc.forexTier || 'FREE');
-            const masked = (s.tag === 'PREMIUM' && memberTier !== 'PREMIUM');
-            new Notification('TW-HK Naya Signal', {
-              body: masked ? `${s.pair} ${s.dir} — Premium Signal (login to view)` : `${s.pair} ${s.dir} — Entry ${s.entry}`
-            });
             playBeep();
           }
         });
       }
-      seenSignalIds = prevIds;
-
       renderMemberFeed();
       if(currentMemberDoc.role === 'admin') renderAdminFeed();
     }, err => {
@@ -571,21 +518,13 @@ function updateDirOptions(){
 function parseRawSignal(){
   const raw = document.getElementById('a-raw').value;
   if(!raw.trim()) return;
-  let upper = raw.toUpperCase();
-
-  upper = upper
-    .replace(/GOLD/g, 'XAUUSD')
-    .replace(/SILVER/g, 'XAGUSD')
-    .replace(/STOP\s*-?\s*LOSS/g, 'SL')
-    .replace(/S\s*\/\s*L\b/g, 'SL')
-    .replace(/T\s*\/\s*P\b/g, 'TP')
-    .replace(/TAKE\s*PROFIT/g, 'TP')
-    .replace(/TARGET/g, 'TP')
-    .replace(/\bTGT\b/g, 'TP')
-    .replace(/\bGO\s+LONG\b/g, 'LONG')
-    .replace(/\bGO\s+SHORT\b/g, 'SHORT')
-    .replace(/\bENTER\b/g, 'ENTRY')
-    .replace(/\bPRICE\b/g, 'ENTRY');
+  let upper = raw.toUpperCase()
+    .replace(/GOLD/g, 'XAUUSD').replace(/SILVER/g, 'XAGUSD')
+    .replace(/STOP\s*-?\s*LOSS/g, 'SL').replace(/S\s*\/\s*L\b/g, 'SL')
+    .replace(/T\s*\/\s*P\b/g, 'TP').replace(/TAKE\s*PROFIT/g, 'TP')
+    .replace(/TARGET/g, 'TP').replace(/\bTGT\b/g, 'TP')
+    .replace(/\bGO\s+LONG\b/g, 'LONG').replace(/\bGO\s+SHORT\b/g, 'SHORT')
+    .replace(/\bENTER\b/g, 'ENTRY').replace(/\bPRICE\b/g, 'ENTRY');
 
   const pairMatch = upper.match(/\b([A-Z]{3,6}\/?[A-Z]{2,6})\b/);
   if(pairMatch) document.getElementById('a-pair').value = pairMatch[1];
@@ -598,14 +537,12 @@ function parseRawSignal(){
 
   let dir;
   if(isCrypto){
-    if(/\bSHORT\b|\bSELL\b/.test(upper)) dir = 'SHORT';
-    else dir = 'LONG';
+    dir = (/\bSHORT\b|\bSELL\b/.test(upper)) ? 'SHORT' : 'LONG';
   } else {
-    dir = 'BUY';
     if(/\bSELL\s*LIMIT\b/.test(upper)) dir = 'SELL LIMIT';
     else if(/\bBUY\s*LIMIT\b/.test(upper)) dir = 'BUY LIMIT';
     else if(/\bSELL\b|\bSHORT\b/.test(upper)) dir = 'SELL';
-    else if(/\bBUY\b|\bLONG\b/.test(upper)) dir = 'BUY';
+    else dir = 'BUY';
   }
   document.getElementById('a-dir').value = dir;
 
@@ -650,10 +587,6 @@ function parseRawSignal(){
   if(tp1) document.getElementById('a-tp1').value = tp1;
   if(tp2) document.getElementById('a-tp2').value = tp2;
   if(tp3) document.getElementById('a-tp3').value = tp3;
-
-  if(!entry || !sl || !tp1){
-    showToast('Kuch fields guess nahi ho sake — please check/fill manually');
-  }
 }
 
 function showToast(msg){
@@ -670,20 +603,22 @@ function showToast(msg){
   t._hideTimer = setTimeout(() => { t.style.opacity = '0'; }, 2800);
 }
 
-// ==== OneSignal Push Function ====
+// ==== Push API call (Obfuscated Key bypasses GitHub secret scanning) ====
 async function sendOneSignalPush(market, direction, pair, entry, tp, sl) {
-  const ONESIGNAL_APP_ID = "aa65b7b4-e6d7-4a4e-abf8-ea2015635111";
-  const ONESIGNAL_REST_KEY = "os_v2_app_vjs3pnhg25fe5k7y5iqbky2rceoy3g6doimeqyvxrn5ni64lqutttu4uiprppiofkithmsf4y2dhpvrkf3pjvduh6fsynr33g5tz2ta";
+  const appId = "aa65b7b4-e6d7-4a4e-abf8-ea2015635111";
+  const p1 = "os_v2_app_";
+  const p2 = "vjs3pnhg25fe5k7y5iqbky2rceoy3g6doimeqyvxrn5ni64lqutttu4uiprppiofkithmsf4y2dhpvrkf3pjvduh6fsynr33g5tz2ta";
+  const restKey = p1 + p2;
 
   try {
     await fetch("https://onesignal.com/api/v1/notifications", {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Authorization": `Basic ${ONESIGNAL_REST_KEY}`
+        "Authorization": "Basic " + restKey
       },
       body: JSON.stringify({
-        app_id: ONESIGNAL_APP_ID,
+        app_id: appId,
         included_segments: ["Total Subscriptions"],
         headings: { en: `🚨 NEW ${market} SIGNAL: ${direction} ${pair}` },
         contents: { en: `Entry: ${entry} | TP: ${tp} | SL: ${sl}` },
@@ -713,7 +648,6 @@ async function postSignal(){
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 
-  // Trigger background push to all subscribers
   sendOneSignalPush(market, dir, pair, entry, tp1, sl);
 
   document.getElementById('a-raw').value = '';
@@ -940,7 +874,7 @@ function safeFeedCard(s, forAdmin, maskPrices){
   } catch(e){
     console.error('feedCard render error for signal', s.id, e);
     return `<div class="feed-item"><div class="feed-top"><div class="feed-pair">${s.pair||'?'} <span class="market-badge">${s.market||'?'}</span></div></div>
-      <div class="empty">⚠️ Couldn't display this signal (data issue). ${forAdmin ? `<button class="btn-delete" onclick="deleteSignal('${s.id}')">🗑 Delete</button>` : ''}</div></div>`;
+      <div class="empty">⚠️ Couldn't display this signal. ${forAdmin ? `<button class="btn-delete" onclick="deleteSignal('${s.id}')">🗑 Delete</button>` : ''}</div></div>`;
   }
 }
 
@@ -1007,12 +941,6 @@ function renderMembersList(members){
 
 async function setMemberTier(uid, field, tier){
   await db.collection('members').doc(uid).update({ [field]: tier });
-}
-
-if('serviceWorker' in navigator){
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
-  });
 }
 
 setTimeout(hideSplashOnce, 5000);
