@@ -8,6 +8,19 @@
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>TW-HK Member Portal</title>
+
+<!-- OneSignal Web Push SDK -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "aa65b7b4-e6d7-4a4e-abf8-ea2015635111",
+      allowLocalhostAsSecureOrigin: true,
+    });
+  });
+</script>
+
 <style>
   :root{
     --navy-950:#070c14; --navy-900:#0b1420; --navy-800:#101c2c; --navy-700:#182740;
@@ -301,8 +314,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js"></script>
 
 <script>
-// ====== 1) APNI FIREBASE CONFIG YAHAN PASTE KAREIN ======
-// Firebase Console → Project Settings → Your apps → Web app → config object
+// ====== 1) FIREBASE CONFIG ======
 const firebaseConfig = {
   apiKey: "AIzaSyD1GgHel2TPnmuemGTD0w50W-DWsaVKW5E",
   authDomain: "tw-hk-32169.firebaseapp.com",
@@ -311,7 +323,6 @@ const firebaseConfig = {
   messagingSenderId: "844851720789",
   appId: "1:844851720789:web:5608a7084081b5a85c1adc"
 };
-// ==========================================================
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -319,7 +330,6 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 const db = firebase.firestore();
 const messaging = firebase.messaging();
 
-// Firebase Console → Project Settings → Cloud Messaging tab → Web Push certificates → Generate key pair
 const VAPID_KEY = "BO0oYEZ3_t2Ya2klRCv9wSinJeMHszzDpYkYyPLHvFR_58SvGqlavpDKo9xy3pUla__vSaU4p-LWg4DtLB_IUMs";
 
 if(firebaseConfig.apiKey.startsWith('PLACEHOLDER')){
@@ -332,7 +342,7 @@ let authMode = 'login';
 let currentUid = null;
 let currentMemberDoc = null;
 let signalsCache = [];
-let calcCache = {}; // signalId -> {risk, lot, contract, rateMode}
+let calcCache = {};
 let notifEnabled = false;
 let unsubSignals = null;
 let unsubMembers = null;
@@ -415,7 +425,6 @@ auth.onAuthStateChanged(async (user) => {
     const doc = await db.collection('members').doc(user.uid).get();
     currentMemberDoc = doc.exists ? doc.data() : null;
     if(!currentMemberDoc){
-      // safety net: member doc missing, create a basic one
       currentMemberDoc = { name: user.email, email: user.email, forexTier: 'FREE', cryptoTier: 'FREE', role: 'member' };
       await db.collection('members').doc(user.uid).set(currentMemberDoc);
     }
@@ -450,32 +459,36 @@ function switchView(view){
   document.getElementById('btn-admin').classList.toggle('active', view === 'admin');
 }
 
-
 function requestNotif(){
-  if(!('Notification' in window)){ showToast('This browser does not support notifications'); return; }
-  Notification.requestPermission().then(perm => {
-    notifEnabled = (perm === 'granted');
-    document.getElementById('notifDot').classList.toggle('on', notifEnabled);
-    if(notifEnabled){
-      saveFcmToken();
-    } else {
-      showToast('Notification permission not granted');
-    }
-  });
+  if(window.OneSignalDeferred){
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.Slidedown.promptPush();
+      checkNotifPermission();
+    });
+  } else if('Notification' in window){
+    Notification.requestPermission().then(perm => {
+      checkNotifPermission();
+      if(perm === 'granted'){
+        saveFcmToken();
+      } else {
+        showToast('Notification permission not granted');
+      }
+    });
+  }
 }
 
-// Re-check permission on every app open — if the user already granted it
-// in a past session, this restores notifEnabled without asking again.
-function syncNotifState(){
+function checkNotifPermission(){
   if(!('Notification' in window)) return;
   notifEnabled = (Notification.permission === 'granted');
   const dot = document.getElementById('notifDot');
   if(dot) dot.classList.toggle('on', notifEnabled);
+}
+
+function syncNotifState(){
+  checkNotifPermission();
   if(notifEnabled) saveFcmToken();
 }
 
-// Gets this device's FCM token and saves it on the member doc so the
-// Cloud Function can push to it even when the app/phone is closed.
 async function saveFcmToken(){
   if(!currentUid || !('serviceWorker' in navigator)) return;
   try{
@@ -483,14 +496,10 @@ async function saveFcmToken(){
     const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
     if(token){
       await db.collection('members').doc(currentUid).update({ fcmToken: token });
-      console.log('FCM token saved');
     }
-  } catch(err){
-    console.error('FCM token fetch failed:', err);
-  }
+  } catch(err){}
 }
 
-// ---- Realtime signals ----
 function startOfToday(){
   const d = new Date();
   d.setHours(0,0,0,0);
@@ -501,7 +510,7 @@ let feedDayMarker = null;
 setInterval(() => {
   const today = new Date().toDateString();
   if(feedDayMarker && feedDayMarker !== today && currentUid){
-    listenSignals(); // day changed — refresh to show only today's signals
+    listenSignals();
   }
 }, 60000);
 
@@ -515,7 +524,6 @@ function listenSignals(){
       const prevIds = new Set(signalsCache.map(s => s.id));
       signalsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-      // fire notification for genuinely new signals (not on very first load)
       if(prevIds.size > 0){
         signalsCache.forEach(s => {
           if(!prevIds.has(s.id) && notifEnabled){
@@ -565,7 +573,6 @@ function parseRawSignal(){
   if(!raw.trim()) return;
   let upper = raw.toUpperCase();
 
-  // Normalize common variants so matching below is more forgiving
   upper = upper
     .replace(/GOLD/g, 'XAUUSD')
     .replace(/SILVER/g, 'XAGUSD')
@@ -607,7 +614,6 @@ function parseRawSignal(){
     const m = upper.match(labelRegex);
     return m ? m[1].trim().replace(/,/g, '') : '';
   };
-  // grabs a list of numbers after a label, e.g. "TP: 2400/2390/2380" or "TP 2400, 2390 2380"
   const grabList = (labelRegex) => {
     const m = upper.match(labelRegex);
     if(!m) return [];
@@ -629,12 +635,8 @@ function parseRawSignal(){
   let tp2 = grab(new RegExp('TP\\s*2[:\\-=\\s]*' + numPattern, 'i')) || tps[1] || '';
   let tp3 = grab(new RegExp('TP\\s*3[:\\-=\\s]*' + numPattern, 'i')) || tps[2] || '';
 
-  // Positional fallback: if labels are missing entirely, use the numbers in the
-  // order they appear (skipping any number that's actually part of the pair name)
   if(!entry || !sl || !tp1){
     const allNums = (upper.match(/[0-9]+(?:[.,][0-9]+)?/g) || []).map(x => x.replace(/,/g,''));
-    const need = [];
-    if(!entry) need.push('entry'); if(!sl) need.push('sl'); if(!tp1) need.push('tp1');
     let idx = 0;
     if(!entry && allNums[idx]){ entry = allNums[idx]; idx++; }
     if(!sl && allNums[idx]){ sl = allNums[idx]; idx++; }
@@ -668,6 +670,31 @@ function showToast(msg){
   t._hideTimer = setTimeout(() => { t.style.opacity = '0'; }, 2800);
 }
 
+// ==== OneSignal Push Function ====
+async function sendOneSignalPush(market, direction, pair, entry, tp, sl) {
+  const ONESIGNAL_APP_ID = "aa65b7b4-e6d7-4a4e-abf8-ea2015635111";
+  const ONESIGNAL_REST_KEY = "os_v2_app_vjs3pnhg25fe5k7y5iqbky2rceoy3g6doimeqyvxrn5ni64lqutttu4uiprppiofkithmsf4y2dhpvrkf3pjvduh6fsynr33g5tz2ta";
+
+  try {
+    await fetch("https://onesignal.com/api/v1/notifications", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Authorization": `Basic ${ONESIGNAL_REST_KEY}`
+      },
+      body: JSON.stringify({
+        app_id: ONESIGNAL_APP_ID,
+        included_segments: ["Total Subscriptions"],
+        headings: { en: `🚨 NEW ${market} SIGNAL: ${direction} ${pair}` },
+        contents: { en: `Entry: ${entry} | TP: ${tp} | SL: ${sl}` },
+        url: "https://hkhamad.github.io/twhk-portal/"
+      })
+    });
+  } catch (err) {
+    console.error("OneSignal push error:", err);
+  }
+}
+
 async function postSignal(){
   const pair = document.getElementById('a-pair').value.trim().toUpperCase();
   const market = document.getElementById('a-market').value;
@@ -685,6 +712,9 @@ async function postSignal(){
     pair, market, dir, entry, sl, tp1, tp2: tp2 || null, tp3: tp3 || null, tag, tradeType, result: null,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
+
+  // Trigger background push to all subscribers
+  sendOneSignalPush(market, dir, pair, entry, tp1, sl);
 
   document.getElementById('a-raw').value = '';
   document.getElementById('a-pair').value = '';
@@ -712,7 +742,6 @@ async function deleteSignal(id){
   await db.collection('signals').doc(id).delete();
 }
 
-// ---- Lot size calculator (persisted per member per signal) ----
 function loadCalcCache(){
   db.collection('memberCalcs').where('uid','==',currentUid).get().then(snap => {
     calcCache = {};
@@ -936,7 +965,6 @@ function renderMemberFeed(){
   el.innerHTML = cards;
 }
 
-// ---- Admin: member management ----
 function listenMembers(){
   if(unsubMembers) unsubMembers();
   unsubMembers = db.collection('members').orderBy('createdAt','desc')
@@ -987,8 +1015,6 @@ if('serviceWorker' in navigator){
   });
 }
 
-// Safety net only — normally hideSplashOnce() fires from onAuthStateChanged
-// as soon as Firebase confirms login state (usually well under a second).
 setTimeout(hideSplashOnce, 5000);
 </script>
 </body>
