@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#070c14">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>TW-HK Institutional Terminal</title>
+
+<style>
+  :root{
+    --navy-950:#070c14; --navy-900:#0b1420; --navy-800:#101c2c; --navy-700:#182740;
+    --gold:#c9a227; --gold-bright:#e8c65a; --green:#3ecf8e; --red:#e2564f; --blue:#4a9eff;
+    --ink:#e9edf3; --ink-dim:#8fa0b8; --line:#22314a;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--navy-950);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;padding:16px 12px 60px;}
+  .wrap{max-width:500px;margin:0 auto;}
+  header{text-align:center;margin-bottom:12px;}
+  .brand{font-family:Georgia,'Times New Roman',serif;font-size:26px;letter-spacing:1px;color:var(--gold-bright);font-weight:700;}
+  .brand span{color:var(--ink);}
+  .tag{color:var(--ink-dim);font-size:11px;margin-top:2px;letter-spacing:2px;text-transform:uppercase;}
+
+  /* --- SESSION KILLZONE RADAR --- */
+  .radar-card{
+    background:linear-gradient(180deg, var(--navy-900), #080f1a);
+    border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);
+  }
+  .radar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .radar-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);font-weight:700;}
+  .radar-time{font-size:12px;font-family:monospace;color:var(--ink-dim);}
+  .session-grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:6px;}
+  .session-pill{
+    background:var(--navy-950);border:1px solid var(--line);border-radius:8px;padding:6px;text-align:center;
+    transition:all 0.3s ease;
+  }
+  .session-pill.active{border-color:var(--green);background:rgba(62,207,142,0.08);}
+  .session-pill.macro{border-color:var(--gold-bright);background:rgba(232,198,90,0.12);box-shadow:0 0 10px rgba(232,198,90,0.2);}
+  .session-name{font-size:10px;font-weight:700;display:block;color:var(--ink-dim);}
+  .session-pill.active .session-name{color:var(--green);}
+  .session-pill.macro .session-name{color:var(--gold-bright);}
+  .session-status{font-size:9px;color:var(--ink-dim);margin-top:2px;display:block;}
+
+  .view-toggle{display:flex;gap:8px;margin-bottom:14px;background:var(--navy-900);border:1px solid var(--line);border-radius:12px;padding:4px;}
+  .view-toggle button{flex:1;padding:10px;border:none;border-radius:9px;background:transparent;color:var(--ink-dim);font-weight:700;font-size:13px;cursor:pointer;}
+  .view-toggle button.active{background:var(--gold);color:var(--navy-950);}
+
+  .panel{background:var(--navy-900);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px;}
+  .panel h2{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin:0 0 10px;display:flex;align-items:center;gap:6px;}
+  .panel h2::before{content:"";width:12px;height:2px;background:var(--gold);display:inline-block;}
+
+  input,select,textarea{width:100%;background:var(--navy-950);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:10px 12px;font-size:13px;font-family:inherit;margin-bottom:8px;}
+  .btn{width:100%;padding:11px;border-radius:10px;border:none;background:var(--gold);color:var(--navy-950);font-weight:700;font-size:13px;cursor:pointer;margin-top:4px;}
+  .btn.secondary{background:transparent;border:1px solid var(--gold);color:var(--gold-bright);}
+  .link-btn{background:none;border:none;color:var(--gold-bright);font-size:12px;cursor:pointer;text-decoration:underline;padding:0;margin-top:4px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+  .member-card{background:linear-gradient(160deg,var(--navy-900),var(--navy-800));border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+  .member-card .name{font-weight:700;font-size:14px;}
+  .member-card .status{font-size:11px;color:var(--green);margin-top:2px;}
+  .logout-btn{background:transparent;border:1px solid var(--ink-dim);color:var(--ink-dim);border-radius:7px;padding:4px 9px;font-size:10px;cursor:pointer;}
+
+  /* --- TERMINAL FEED CARDS --- */
+  .feed-item{background:var(--navy-950);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;position:relative;}
+  .feed-item.market-FOREX{border-top:3px solid var(--gold);}
+  .feed-item.market-CRYPTO{border-top:3px solid #9b6bd9;}
+  .feed-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .feed-pair{font-family:Georgia,serif;font-weight:700;font-size:17px;display:flex;align-items:center;gap:6px;}
+  .market-badge{font-size:9px;font-weight:800;padding:2px 6px;border-radius:6px;}
+  .market-badge.FOREX{background:rgba(201,162,39,.15);color:var(--gold-bright);border:1px solid var(--gold);}
+  .market-badge.CRYPTO{background:rgba(155,107,217,.18);color:#c9a9f2;border:1px solid #9b6bd9;}
+  .feed-dir{font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;}
+  .feed-dir.BUY, .feed-dir.LONG{background:rgba(62,207,142,.15);color:var(--green);border:1px solid var(--green);}
+  .feed-dir.SELL, .feed-dir.SHORT{background:rgba(226,86,79,.15);color:var(--red);border:1px solid var(--red);}
+  
+  .confluence-bar{display:flex;gap:6px;margin-bottom:8px;font-size:10px;}
+  .confluence-chip{background:var(--navy-900);border:1px solid var(--line);padding:3px 8px;border-radius:6px;color:var(--ink-dim);}
+
+  /* R:R VISUAL METER */
+  .rr-visual{margin:10px 0;background:var(--navy-900);border-radius:8px;padding:8px;}
+  .rr-track{height:6px;width:100%;border-radius:3px;background:#1a283e;display:flex;overflow:hidden;margin-top:5px;}
+  .rr-risk{background:var(--red);height:100%;}
+  .rr-reward{background:var(--green);height:100%;}
+  .rr-meta{display:flex;justify-content:space-between;font-size:10px;font-weight:700;}
+
+  .feed-levels{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:12px;margin-top:8px;}
+  .feed-levels div{background:var(--navy-900);border-radius:6px;padding:6px;text-align:center;}
+  .feed-levels .k{color:var(--ink-dim);font-size:10px;display:block;}
+  .v-entry{color:var(--blue);font-weight:700;display:block;margin-top:2px;}
+  .v-sl{color:var(--red);font-weight:700;display:block;margin-top:2px;}
+  .v-tp{color:var(--green);font-weight:700;display:block;margin-top:2px;}
+
+  .calc-toggle{background:var(--navy-900);border:1px solid var(--line);border-radius:6px;color:var(--gold-bright);padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;width:100%;margin-top:8px;}
+  .calc-box{display:none;margin-top:8px;background:var(--navy-900);border:1px solid var(--line);border-radius:8px;padding:8px;}
+  .calc-box.open{display:block;}
+  .empty{color:var(--ink-dim);font-size:13px;text-align:center;padding:20px 0;}
+  .hidden{display:none !important;}
+  .errbox{font-size:12px;color:var(--red);margin-top:-4px;margin-bottom:8px;min-height:14px;}
+  .result-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;margin-top:8px;display:inline-block;}
+  .result-badge.WIN{background:rgba(62,207,142,.15);color:var(--green);}
+  .result-badge.LOSS{background:rgba(226,86,79,.15);color:var(--red);}
+  .result-badge.BE{background:rgba(143,160,184,.15);color:var(--ink-dim);}
+  .admin-btns{display:flex;gap:6px;margin-top:8px;}
+  .admin-btns button{flex:1;border:none;padding:6px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">TW<span>-</span>HK</div>
+    <div class="tag">Institutional Terminal</div>
+  </header>
+
+  <!-- KILLZONE MACRO RADAR -->
+  <div class="radar-card">
+    <div class="radar-head">
+      <span class="radar-title">⚡ Session Radar (UTC-4)</span>
+      <span class="radar-time" id="nyTime">00:00:00</span>
+    </div>
+    <div class="session-grid">
+      <div class="session-pill" id="sess-asia">
+        <span class="session-name">ASIAN</span>
+        <span class="session-status" id="stat-asia">Closed</span>
+      </div>
+      <div class="session-pill" id="sess-london">
+        <span class="session-name">LONDON</span>
+        <span class="session-status" id="stat-london">Closed</span>
+      </div>
+      <div class="session-pill" id="sess-ny">
+        <span class="session-name">NEW YORK</span>
+        <span class="session-status" id="stat-ny">Closed</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH -->
+  <div id="authBox" class="panel hidden">
+    <h2 id="authTitle">Login</h2>
+    <input id="a-name" placeholder="Full Name" class="hidden">
+    <input id="a-email" type="email" placeholder="Email Address">
+    <input id="a-pass" type="password" placeholder="Password">
+    <div class="errbox" id="authErr"></div>
+    <button class="btn" id="authSubmit" onclick="handleAuthSubmit()">Login</button>
+    <button class="link-btn" onclick="toggleAuthMode()">Sign up for terminal access</button>
+  </div>
+
+  <div id="appBox" class="hidden">
+    <div class="view-toggle" id="viewToggle">
+      <button id="btn-member" class="active" onclick="switchView('member')">Terminal Feed</button>
+      <button id="btn-admin" onclick="switchView('admin')">Admin Hub</button>
+    </div>
+
+    <!-- MEMBER VIEW -->
+    <div id="memberView">
+      <div class="member-card">
+        <div>
+          <div class="name" id="loggedName">-</div>
+          <div class="status" id="loggedTier">Institutional Access Active</div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()">Logout</button>
+      </div>
+      <div class="panel">
+        <h2>Live Algorithmic Setups</h2>
+        <div id="memberFeed"><div class="empty">Scanning orders...</div></div>
+      </div>
+    </div>
+
+    <!-- ADMIN VIEW -->
+    <div id="adminView" class="hidden">
+      <div class="panel">
+        <h2>Deploy New Signal</h2>
+        <div class="grid2">
+          <input id="a-pair" placeholder="Pair (e.g. XAUUSD)">
+          <select id="a-market">
+            <option value="FOREX">Forex / Metals</option>
+            <option value="CRYPTO">Crypto</option>
+          </select>
+        </div>
+        <div class="grid2">
+          <select id="a-dir"><option value="BUY">BUY</option><option value="SELL">SELL</option><option value="LONG">LONG</option><option value="SHORT">SHORT</option></select>
+          <select id="a-confluence">
+            <option value="Liquidity Sweep + FVG">Liquidity Sweep + FVG</option>
+            <option value="Market Structure Shift">Market Structure Shift</option>
+            <option value="Dealing Range Discount">Dealing Range Discount</option>
+            <option value="London Silver Bullet">London Silver Bullet</option>
+          </select>
+        </div>
+        <div class="grid2">
+          <input id="a-entry" placeholder="Entry Level" type="number" step="any">
+          <input id="a-sl" placeholder="Stop Loss" type="number" step="any">
+        </div>
+        <input id="a-tp1" placeholder="Take Profit 1" type="number" step="any">
+        <button class="btn" onclick="postSignal()">Deploy Order Setup</button>
+      </div>
+      <div class="panel">
+        <h2>Admin Management Feed</h2>
+        <div id="adminFeed"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyD1GgHel2TPnmuemGTD0w50W-DWsaVKW5E",
+  authDomain: "tw-hk-32169.firebaseapp.com",
+  projectId: "tw-hk-32169",
+  storageBucket: "tw-hk-32169.firebasestorage.app",
+  messagingSenderId: "844851720789",
+  appId: "1:844851720789:web:5608a7084081b5a85c1adc"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let authMode = 'login';
+let currentUid = null;
+let currentMemberDoc = null;
+let signalsCache = [];
+
+// --- SESSION RADAR LOGIC (UTC-4 Reference) ---
+function updateRadar() {
+  const now = new Date();
+  // Convert current time to UTC-4
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const nyDate = new Date(utc - (4 * 3600000));
+  
+  const h = nyDate.getHours();
+  const m = nyDate.getMinutes();
+  const timeStr = [h, m, nyDate.getSeconds()].map(v => String(v).padStart(2, '0')).join(':');
+  document.getElementById('nyTime').textContent = timeStr + " EST";
+
+  const totalMin = (h * 60) + m;
+
+  // London: 02:00 to 11:00 (120 to 660 mins) | Open: 02:00 to 05:00 (120 to 300 mins)
+  const isLondon = totalMin >= 120 && totalMin <= 660;
+  const isLondonOpen = totalMin >= 120 && totalMin <= 300;
+  const lonPill = document.getElementById('sess-london');
+  lonPill.className = 'session-pill' + (isLondonOpen ? ' macro' : (isLondon ? ' active' : ''));
+  document.getElementById('stat-london').textContent = isLondonOpen ? '🔥 Open Killzone' : (isLondon ? 'Active' : 'Closed');
+
+  // New York: 07:00 to 16:00 (420 to 960 mins) | AM Macro: 08:30 to 11:00 (510 to 660 mins)
+  const isNY = totalMin >= 420 && totalMin <= 960;
+  const isNYMacro = totalMin >= 510 && totalMin <= 660;
+  const nyPill = document.getElementById('sess-ny');
+  nyPill.className = 'session-pill' + (isNYMacro ? ' macro' : (isNY ? ' active' : ''));
+  document.getElementById('stat-ny').textContent = isNYMacro ? '⚡ NY Macro' : (isNY ? 'Active' : 'Closed');
+
+  // Asia: 19:00 to 02:00 (1140 to 120 mins)
+  const isAsia = totalMin >= 1140 || totalMin < 120;
+  const asiaPill = document.getElementById('sess-asia');
+  asiaPill.className = 'session-pill' + (isAsia ? ' active' : '');
+  document.getElementById('stat-asia').textContent = isAsia ? 'Active' : 'Closed';
+}
+setInterval(updateRadar, 1000);
+updateRadar();
+
+// --- AUTH HANDLING ---
+function toggleAuthMode(){
+  authMode = authMode === 'login' ? 'signup' : 'login';
+  document.getElementById('authTitle').textContent = authMode === 'login' ? 'Login' : 'Signup';
+  document.getElementById('authSubmit').textContent = authMode === 'login' ? 'Login' : 'Create Terminal Access';
+  document.getElementById('a-name').classList.toggle('hidden', authMode !== 'signup');
+  document.getElementById('authErr').textContent = '';
+}
+
+async function handleAuthSubmit(){
+  const email = document.getElementById('a-email').value.trim();
+  const pass = document.getElementById('a-pass').value;
+  const errBox = document.getElementById('authErr');
+  errBox.textContent = '';
+  if(!email || !pass){ errBox.textContent = 'Enter email & password'; return; }
+
+  try{
+    if(authMode === 'login'){
+      await auth.signInWithEmailAndPassword(email, pass);
+    } else {
+      const name = document.getElementById('a-name').value.trim() || 'Trader';
+      const cred = await auth.createUserWithEmailAndPassword(email, pass);
+      await db.collection('members').doc(cred.user.uid).set({
+        name, email, role: 'member', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+  } catch(e){ errBox.textContent = e.message; }
+}
+
+function doLogout(){ auth.signOut(); }
+
+auth.onAuthStateChanged(async (user) => {
+  if(user){
+    currentUid = user.uid;
+    const doc = await db.collection('members').doc(user.uid).get();
+    currentMemberDoc = doc.exists ? doc.data() : { name: user.email, role: 'member' };
+    document.getElementById('authBox').classList.add('hidden');
+    document.getElementById('appBox').classList.remove('hidden');
+    document.getElementById('loggedName').textContent = currentMemberDoc.name;
+    document.getElementById('viewToggle').classList.toggle('hidden', currentMemberDoc.role !== 'admin');
+    listenSignals();
+  } else {
+    document.getElementById('authBox').classList.remove('hidden');
+    document.getElementById('appBox').classList.add('hidden');
+  }
+});
+
+function switchView(view){
+  document.getElementById('memberView').classList.toggle('hidden', view !== 'member');
+  document.getElementById('adminView').classList.toggle('hidden', view !== 'admin');
+  document.getElementById('btn-member').classList.toggle('active', view === 'member');
+  document.getElementById('btn-admin').classList.toggle('active', view === 'admin');
+}
+
+// --- SIGNALS & MATHEMATICAL R:R METRICS ---
+function calculateRR(entry, sl, tp) {
+  const risk = Math.abs(entry - sl);
+  const reward = Math.abs(tp - entry);
+  if (!risk || !reward) return { ratio: '1:1', riskPct: 50, rewardPct: 50 };
+  const r = (reward / risk).toFixed(1);
+  const riskShare = Math.round((risk / (risk + reward)) * 100);
+  const rewardShare = 100 - riskShare;
+  return { ratio: `1:${r}`, riskPct: riskShare, rewardPct: rewardShare };
+}
+
+function feedCard(s, isAdmin){
+  const e = parseFloat(s.entry), sl = parseFloat(s.sl), tp = parseFloat(s.tp1);
+  const rr = calculateRR(e, sl, tp);
+  const market = s.market || 'FOREX';
+
+  return `
+    <div class="feed-item market-${market}">
+      <div class="feed-top">
+        <div class="feed-pair">${s.pair} <span class="market-badge ${market}">${market}</span></div>
+        <div class="feed-dir ${s.dir}">${s.dir}</div>
+      </div>
+      <div class="confluence-bar">
+        <span class="confluence-chip">🎯 ${s.confluence || 'SMC Setup'}</span>
+        <span class="confluence-chip">⚡ R:R ${rr.ratio}</span>
+      </div>
+      <div class="rr-visual">
+        <div class="rr-meta">
+          <span style="color:var(--red)">Risk: 1.0</span>
+          <span style="color:var(--green)">Reward: ${rr.ratio.split(':')[1]}</span>
+        </div>
+        <div class="rr-track">
+          <div class="rr-risk" style="width:${rr.riskPct}%"></div>
+          <div class="rr-reward" style="width:${rr.rewardPct}%"></div>
+        </div>
+      </div>
+      <div class="feed-levels">
+        <div><span class="k">Entry</span><span class="v-entry">${s.entry}</span></div>
+        <div><span class="k">Stop Loss</span><span class="v-sl">${s.sl}</span></div>
+        <div><span class="k">Target (TP)</span><span class="v-tp">${s.tp1}</span></div>
+      </div>
+      ${s.result ? `<div class="result-badge ${s.result}">${s.result}</div>` : ''}
+      ${isAdmin && !s.result ? `
+        <div class="admin-btns">
+          <button style="background:var(--green);color:#000" onclick="setResult('${s.id}','WIN')">Mark WIN</button>
+          <button style="background:var(--red);color:#fff" onclick="setResult('${s.id}','LOSS')">Mark LOSS</button>
+          <button style="background:var(--ink-dim);color:#000" onclick="setResult('${s.id}','BE')">Mark BE</button>
+        </div>` : ''}
+    </div>`;
+}
+
+function listenSignals(){
+  db.collection('signals').orderBy('createdAt','desc').limit(50)
+    .onSnapshot(snap => {
+      signalsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const html = signalsCache.length ? signalsCache.map(s => feedCard(s, false)).join('') : '<div class="empty">No setups deployed today</div>';
+      document.getElementById('memberFeed').innerHTML = html;
+      if(currentMemberDoc && currentMemberDoc.role === 'admin'){
+        document.getElementById('adminFeed').innerHTML = signalsCache.map(s => feedCard(s, true)).join('');
+      }
+    });
+}
+
+async function postSignal(){
+  const pair = document.getElementById('a-pair').value.trim().toUpperCase();
+  const market = document.getElementById('a-market').value;
+  const dir = document.getElementById('a-dir').value;
+  const confluence = document.getElementById('a-confluence').value;
+  const entry = document.getElementById('a-entry').value;
+  const sl = document.getElementById('a-sl').value;
+  const tp1 = document.getElementById('a-tp1').value;
+
+  if(!pair || !entry || !sl || !tp1) return alert('Fill all fields');
+
+  await db.collection('signals').add({
+    pair, market, dir, confluence, entry, sl, tp1, result: null,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  document.getElementById('a-pair').value = '';
+  document.getElementById('a-entry').value = '';
+  document.getElementById('a-sl').value = '';
+  document.getElementById('a-tp1').value = '';
+}
+
+async function setResult(id, result){
+  await db.collection('signals').doc(id).update({ result });
+}
+</script>
+</body>
+</html>
