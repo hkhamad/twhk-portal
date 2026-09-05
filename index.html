@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#070c14">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>TW-HK Institutional Terminal</title>
+
+<style>
+  :root{
+    --navy-950:#070c14; --navy-900:#0b1420; --navy-800:#101c2c; --navy-700:#182740;
+    --gold:#c9a227; --gold-bright:#e8c65a; --green:#3ecf8e; --red:#e2564f; --blue:#4a9eff;
+    --ink:#e9edf3; --ink-dim:#8fa0b8; --line:#22314a;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--navy-950);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;padding:16px 12px 60px;}
+  .wrap{max-width:500px;margin:0 auto;}
+  header{text-align:center;margin-bottom:12px;}
+  .brand{font-family:Georgia,'Times New Roman',serif;font-size:26px;letter-spacing:1px;color:var(--gold-bright);font-weight:700;}
+  .brand span{color:var(--ink);}
+  .tag{color:var(--ink-dim);font-size:11px;margin-top:2px;letter-spacing:2px;text-transform:uppercase;}
+
+  /* SESSION KILLZONE RADAR */
+  .radar-card{
+    background:linear-gradient(180deg, var(--navy-900), #080f1a);
+    border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px;
+  }
+  .radar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .radar-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);font-weight:700;}
+  .radar-time{font-size:12px;font-family:monospace;color:var(--ink-dim);}
+  .session-grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:6px;}
+  .session-pill{
+    background:var(--navy-950);border:1px solid var(--line);border-radius:8px;padding:6px;text-align:center;
+  }
+  .session-pill.active{border-color:var(--green);background:rgba(62,207,142,0.08);}
+  .session-pill.macro{border-color:var(--gold-bright);background:rgba(232,198,90,0.12);box-shadow:0 0 10px rgba(232,198,90,0.2);}
+  .session-name{font-size:10px;font-weight:700;display:block;color:var(--ink-dim);}
+  .session-pill.active .session-name{color:var(--green);}
+  .session-pill.macro .session-name{color:var(--gold-bright);}
+  .session-status{font-size:9px;color:var(--ink-dim);margin-top:2px;display:block;}
+
+  /* CAPITAL GUARDIAN */
+  .guardian-box{
+    background:linear-gradient(145deg, #101c2c, #0b1420);
+    border:1px solid var(--gold);border-radius:12px;padding:12px 14px;margin-bottom:12px;
+  }
+  .guardian-head{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;color:var(--gold-bright);text-transform:uppercase;}
+  .guardian-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+  .guardian-inputs input{margin-bottom:0;padding:8px 10px;font-size:12px;}
+  .guardian-info{display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--ink-dim);}
+  .tilt-alert{
+    background:rgba(226,86,79,.18);border:1px solid var(--red);border-radius:8px;
+    padding:8px 10px;font-size:11px;color:#ff9d97;margin-top:8px;text-align:center;font-weight:700;
+  }
+
+  .view-toggle{display:flex;gap:8px;margin-bottom:14px;background:var(--navy-900);border:1px solid var(--line);border-radius:12px;padding:4px;}
+  .view-toggle button{flex:1;padding:10px;border:none;border-radius:9px;background:transparent;color:var(--ink-dim);font-weight:700;font-size:13px;cursor:pointer;}
+  .view-toggle button.active{background:var(--gold);color:var(--navy-950);}
+
+  .panel{background:var(--navy-900);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px;}
+  .panel h2{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin:0 0 10px;display:flex;align-items:center;gap:6px;}
+  .panel h2::before{content:"";width:12px;height:2px;background:var(--gold);display:inline-block;}
+
+  input,select{width:100%;background:var(--navy-950);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:10px 12px;font-size:13px;font-family:inherit;margin-bottom:8px;}
+  .btn{width:100%;padding:11px;border-radius:10px;border:none;background:var(--gold);color:var(--navy-950);font-weight:700;font-size:13px;cursor:pointer;margin-top:4px;}
+  .btn.wa{background:transparent;border:1px solid #25D366;color:#25D366;margin-top:8px;}
+  .link-btn{background:none;border:none;color:var(--gold-bright);font-size:12px;cursor:pointer;text-decoration:underline;padding:0;margin-top:4px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+  .member-card{background:linear-gradient(160deg,var(--navy-900),var(--navy-800));border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+  .member-card .name{font-weight:700;font-size:14px;}
+  .member-card .status{font-size:11px;color:var(--green);margin-top:2px;}
+  .logout-btn{background:transparent;border:1px solid var(--ink-dim);color:var(--ink-dim);border-radius:7px;padding:4px 9px;font-size:10px;cursor:pointer;}
+
+  /* SIGNAL CARDS */
+  .feed-item{background:var(--navy-950);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;position:relative;}
+  .feed-item.market-FOREX{border-top:3px solid var(--gold);}
+  .feed-item.market-CRYPTO{border-top:3px solid #9b6bd9;}
+  .feed-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .feed-pair{font-family:Georgia,serif;font-weight:700;font-size:17px;display:flex;align-items:center;gap:6px;}
+  .market-badge{font-size:9px;font-weight:800;padding:2px 6px;border-radius:6px;}
+  .market-badge.FOREX{background:rgba(201,162,39,.15);color:var(--gold-bright);border:1px solid var(--gold);}
+  .market-badge.CRYPTO{background:rgba(155,107,217,.18);color:#c9a9f2;border:1px solid #9b6bd9;}
+  .trade-code{font-family:monospace;font-size:11px;font-weight:700;background:var(--navy-900);border:1px solid var(--line);color:var(--gold-bright);padding:2px 6px;border-radius:5px;}
+  .feed-dir{font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;}
+  .feed-dir.BUY, .feed-dir.LONG{background:rgba(62,207,142,.15);color:var(--green);border:1px solid var(--green);}
+  .feed-dir.SELL, .feed-dir.SHORT{background:rgba(226,86,79,.15);color:var(--red);border:1px solid var(--red);}
+  
+  /* ROADMAP LIVE STATUS BADGE */
+  .roadmap-badge{
+    background:rgba(74,158,255,0.12);border:1px solid var(--blue);color:var(--blue);
+    padding:6px 10px;border-radius:8px;font-size:11px;font-weight:700;margin:8px 0;display:flex;align-items:center;justify-content:space-between;
+  }
+  .roadmap-badge.be{border-color:var(--green);color:var(--green);background:rgba(62,207,142,0.12);}
+  .roadmap-badge.tp{border-color:var(--gold-bright);color:var(--gold-bright);background:rgba(232,198,90,0.15);}
+
+  /* R:R VISUAL METER */
+  .rr-visual{margin:8px 0;background:var(--navy-900);border-radius:8px;padding:8px;}
+  .rr-track{height:6px;width:100%;border-radius:3px;background:#1a283e;display:flex;overflow:hidden;margin-top:5px;}
+  .rr-risk{background:var(--red);height:100%;}
+  .rr-reward{background:var(--green);height:100%;}
+  .rr-meta{display:flex;justify-content:space-between;font-size:10px;font-weight:700;}
+
+  .auto-lot-badge{
+    background:var(--navy-900);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:8px;
+    display:flex;justify-content:space-between;align-items:center;font-size:11px;
+  }
+  .auto-lot-val{font-size:13px;font-weight:800;color:var(--gold-bright);}
+
+  .feed-levels{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:12px;margin-top:8px;}
+  .feed-levels div{background:var(--navy-900);border-radius:6px;padding:6px;text-align:center;}
+  .feed-levels .k{color:var(--ink-dim);font-size:10px;display:block;}
+  .v-entry{color:var(--blue);font-weight:700;display:block;margin-top:2px;}
+  .v-sl{color:var(--red);font-weight:700;display:block;margin-top:2px;}
+  .v-tp{color:var(--green);font-weight:700;display:block;margin-top:2px;}
+
+  .locked-val{filter:blur(5px);user-select:none;}
+  .upgrade-note{margin-top:8px;font-size:11px;color:var(--gold);background:rgba(201,162,39,.1);border:1px dashed var(--gold);border-radius:8px;padding:8px;text-align:center;}
+
+  .empty{color:var(--ink-dim);font-size:13px;text-align:center;padding:20px 0;}
+  .hidden{display:none !important;}
+  .errbox{font-size:12px;color:var(--red);margin-top:-4px;margin-bottom:8px;min-height:14px;}
+  .result-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;margin-top:8px;display:inline-block;}
+  .result-badge.WIN{background:rgba(62,207,142,.15);color:var(--green);}
+  .result-badge.LOSS{background:rgba(226,86,79,.15);color:var(--red);}
+  .result-badge.BE{background:rgba(143,160,184,.15);color:var(--ink-dim);}
+
+  /* ADMIN CONTROLS */
+  .roadmap-ctrls{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px;}
+  .roadmap-ctrls label{font-size:10px;color:var(--ink-dim);text-transform:uppercase;display:block;margin-bottom:4px;font-weight:700;}
+  .roadmap-btns{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:6px;}
+  .roadmap-btns button{background:var(--navy-900);border:1px solid var(--line);color:var(--ink);padding:7px;font-size:10px;border-radius:6px;cursor:pointer;font-weight:600;}
+  .admin-btns{display:flex;gap:6px;margin-top:8px;}
+  .admin-btns button{flex:1;border:none;padding:6px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;}
+  .btn-del{width:100%;margin-top:6px;padding:6px;border-radius:6px;border:1px solid var(--red);background:transparent;color:var(--red);font-size:11px;font-weight:700;cursor:pointer;}
+
+  .member-row{background:var(--navy-950);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-size:12px;}
+  .tier-toggle{border:none;border-radius:5px;padding:4px 8px;font-size:10px;font-weight:700;cursor:pointer;}
+  .tier-toggle.prem{background:rgba(232,198,90,.18);color:var(--gold-bright);}
+  .tier-toggle.fr{background:rgba(143,160,184,.15);color:var(--ink-dim);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">TW<span>-</span>HK</div>
+    <div class="tag">Institutional Terminal</div>
+  </header>
+
+  <!-- KILLZONE MACRO RADAR -->
+  <div class="radar-card">
+    <div class="radar-head">
+      <span class="radar-title">⚡ Session Radar (UTC-4)</span>
+      <span class="radar-time" id="nyTime">00:00:00</span>
+    </div>
+    <div class="session-grid">
+      <div class="session-pill" id="sess-asia">
+        <span class="session-name">ASIAN</span>
+        <span class="session-status" id="stat-asia">Closed</span>
+      </div>
+      <div class="session-pill" id="sess-london">
+        <span class="session-name">LONDON</span>
+        <span class="session-status" id="stat-london">Closed</span>
+      </div>
+      <div class="session-pill" id="sess-ny">
+        <span class="session-name">NEW YORK</span>
+        <span class="session-status" id="stat-ny">Closed</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH -->
+  <div id="authBox" class="panel hidden">
+    <h2 id="authTitle">Login</h2>
+    <input id="a-name" placeholder="Full Name" class="hidden">
+    <input id="a-email" type="email" placeholder="Email Address">
+    <input id="a-pass" type="password" placeholder="Password">
+    <div class="errbox" id="authErr"></div>
+    <button class="btn" id="authSubmit" onclick="handleAuthSubmit()">Login</button>
+    <button class="link-btn" onclick="toggleAuthMode()">Sign up for terminal access</button>
+  </div>
+
+  <div id="appBox" class="hidden">
+    <div class="view-toggle" id="viewToggle">
+      <button id="btn-member" class="active" onclick="switchView('member')">Terminal Feed</button>
+      <button id="btn-admin" onclick="switchView('admin')">Admin Hub</button>
+    </div>
+
+    <!-- MEMBER VIEW -->
+    <div id="memberView">
+      <div class="member-card">
+        <div>
+          <div class="name" id="loggedName">-</div>
+          <div class="status" id="loggedTier">Plan: FREE</div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()">Logout</button>
+      </div>
+
+      <!-- CAPITAL GUARDIAN WIDGET -->
+      <div class="guardian-box">
+        <div class="guardian-head">
+          <span>🛡️ Capital Guardian</span>
+          <span id="riskModeText">1.0% Risk</span>
+        </div>
+        <div class="guardian-inputs">
+          <input type="number" id="userBalance" placeholder="Account Balance ($)" oninput="updateGuardian()">
+          <input type="number" id="userRiskPct" placeholder="Risk % (Default: 1%)" value="1" oninput="updateGuardian()">
+        </div>
+        <div class="guardian-info">
+          <span>Risk per Trade: <b id="calcRiskDollar">$0.00</b></span>
+          <span id="guardianStatus">Status: Safe</span>
+        </div>
+        <div id="tiltLockMsg" class="tilt-alert hidden">
+          ⚠️ 2 Daily Losses Hit — Anti-Overtrading lock active. Preserve capital!
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Live Premium Signals</h2>
+        <div id="memberFeed"><div class="empty">Scanning orders...</div></div>
+      </div>
+    </div>
+
+    <!-- ADMIN VIEW -->
+    <div id="adminView" class="hidden">
+      <div class="panel">
+        <h2>Deploy New Premium Signal</h2>
+        <div class="grid2">
+          <input id="a-pair" placeholder="Pair (e.g. XAUUSD)">
+          <select id="a-market">
+            <option value="FOREX">Forex / Metals</option>
+            <option value="CRYPTO">Crypto</option>
+          </select>
+        </div>
+        <div class="grid2">
+          <select id="a-dir">
+            <option value="BUY">BUY</option>
+            <option value="SELL">SELL</option>
+            <option value="BUY LIMIT">BUY LIMIT</option>
+            <option value="SELL LIMIT">SELL LIMIT</option>
+          </select>
+          <input id="a-entry" placeholder="Entry Level" type="number" step="any">
+        </div>
+        <div class="grid2">
+          <input id="a-sl" placeholder="Stop Loss" type="number" step="any">
+          <input id="a-tp1" placeholder="TP 1" type="number" step="any">
+        </div>
+        <div class="grid2">
+          <input id="a-tp2" placeholder="TP 2 (optional)" type="number" step="any">
+          <input id="a-tp3" placeholder="TP 3 (optional)" type="number" step="any">
+        </div>
+        <button class="btn" onclick="postSignal()">Deploy Premium Signal</button>
+      </div>
+
+      <div class="panel">
+        <h2>Active Deployed Orders</h2>
+        <div id="adminFeed"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Terminal Access Control (Members)</h2>
+        <div id="membersList"><div class="empty">Loading members...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyD1GgHel2TPnmuemGTD0w50W-DWsaVKW5E",
+  authDomain: "tw-hk-32169.firebaseapp.com",
+  projectId: "tw-hk-32169",
+  storageBucket: "tw-hk-32169.firebasestorage.app",
+  messagingSenderId: "844851720789",
+  appId: "1:844851720789:web:5608a7084081b5a85c1adc"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let authMode = 'login';
+let currentUid = null;
+let currentMemberDoc = null;
+let signalsCache = [];
+
+// --- SESSION RADAR ---
+function updateRadar() {
+  const now = new Date();
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const nyDate = new Date(utc - (4 * 3600000));
+  
+  const h = nyDate.getHours();
+  const m = nyDate.getMinutes();
+  const timeStr = [h, m, nyDate.getSeconds()].map(v => String(v).padStart(2, '0')).join(':');
+  document.getElementById('nyTime').textContent = timeStr + " EST";
+
+  const totalMin = (h * 60) + m;
+
+  const isLondon = totalMin >= 120 && totalMin <= 660;
+  const isLondonOpen = totalMin >= 120 && totalMin <= 300;
+  const lonPill = document.getElementById('sess-london');
+  lonPill.className = 'session-pill' + (isLondonOpen ? ' macro' : (isLondon ? ' active' : ''));
+  document.getElementById('stat-london').textContent = isLondonOpen ? '🔥 Open Killzone' : (isLondon ? 'Active' : 'Closed');
+
+  const isNY = totalMin >= 420 && totalMin <= 960;
+  const isNYMacro = totalMin >= 510 && totalMin <= 660;
+  const nyPill = document.getElementById('sess-ny');
+  nyPill.className = 'session-pill' + (isNYMacro ? ' macro' : (isNY ? ' active' : ''));
+  document.getElementById('stat-ny').textContent = isNYMacro ? '⚡ NY Macro' : (isNY ? 'Active' : 'Closed');
+
+  const isAsia = totalMin >= 1140 || totalMin < 120;
+  const asiaPill = document.getElementById('sess-asia');
+  asiaPill.className = 'session-pill' + (isAsia ? ' active' : '');
+  document.getElementById('stat-asia').textContent = isAsia ? 'Active' : 'Closed';
+}
+setInterval(updateRadar, 1000);
+updateRadar();
+
+// --- CAPITAL GUARDIAN ---
+function updateGuardian() {
+  const bal = parseFloat(document.getElementById('userBalance').value) || 0;
+  const riskPct = parseFloat(document.getElementById('userRiskPct').value) || 1;
+  const riskDollar = (bal * (riskPct / 100)).toFixed(2);
+  document.getElementById('calcRiskDollar').textContent = '$' + riskDollar;
+  document.getElementById('riskModeText').textContent = riskPct + '% Risk';
+
+  localStorage.setItem('hk_balance', bal);
+  localStorage.setItem('hk_risk_pct', riskPct);
+
+  const lossesToday = signalsCache.filter(s => s.result === 'LOSS').length;
+  const tiltEl = document.getElementById('tiltLockMsg');
+  const statusEl = document.getElementById('guardianStatus');
+  if(lossesToday >= 2){
+    tiltEl.classList.remove('hidden');
+    statusEl.innerHTML = '<span style="color:var(--red)">Tilt Shield Active</span>';
+  } else {
+    tiltEl.classList.add('hidden');
+    statusEl.innerHTML = '<span style="color:var(--green)">Status: Safe</span>';
+  }
+
+  renderMemberFeed();
+}
+
+function computeLotSize(signal) {
+  const bal = parseFloat(document.getElementById('userBalance')?.value) || 0;
+  const riskPct = parseFloat(document.getElementById('userRiskPct')?.value) || 1;
+  if (!bal) return null;
+
+  const riskDollar = bal * (riskPct / 100);
+  const entry = parseFloat(signal.entry);
+  const sl = parseFloat(signal.sl);
+  const slDist = Math.abs(entry - sl);
+  if (!slDist) return null;
+
+  const pair = (signal.pair || '').toUpperCase();
+  let lot = 0;
+
+  if (pair.includes('XAU') || pair.includes('GOLD')) {
+    lot = riskDollar / (slDist * 100);
+  } else if (signal.market === 'CRYPTO') {
+    const qty = riskDollar / slDist;
+    return { label: 'Position Qty', val: qty.toFixed(3) + ' units' };
+  } else {
+    lot = riskDollar / (slDist * 100000);
+  }
+
+  lot = Math.floor(lot * 100) / 100;
+  if (lot < 0.01) lot = 0.01;
+  return { label: 'Suggested Lot', val: lot.toFixed(2) + ' lots' };
+}
+
+// --- AUTH LOGIC ---
+function toggleAuthMode(){
+  authMode = authMode === 'login' ? 'signup' : 'login';
+  document.getElementById('authTitle').textContent = authMode === 'login' ? 'Login' : 'Signup';
+  document.getElementById('authSubmit').textContent = authMode === 'login' ? 'Login' : 'Create Terminal Access';
+  document.getElementById('a-name').classList.toggle('hidden', authMode !== 'signup');
+  document.getElementById('authErr').textContent = '';
+}
+
+async function handleAuthSubmit(){
+  const email = document.getElementById('a-email').value.trim();
+  const pass = document.getElementById('a-pass').value;
+  const errBox = document.getElementById('authErr');
+  errBox.textContent = '';
+  if(!email || !pass){ errBox.textContent = 'Enter email & password'; return; }
+
+  try{
+    if(authMode === 'login'){
+      await auth.signInWithEmailAndPassword(email, pass);
+    } else {
+      const name = document.getElementById('a-name').value.trim() || 'Trader';
+      const cred = await auth.createUserWithEmailAndPassword(email, pass);
+      await db.collection('members').doc(cred.user.uid).set({
+        name, email, tier: 'FREE', role: 'member', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+  } catch(e){ errBox.textContent = e.message; }
+}
+
+function doLogout(){ auth.signOut(); }
+
+auth.onAuthStateChanged(async (user) => {
+  if(user){
+    currentUid = user.uid;
+    const doc = await db.collection('members').doc(user.uid).get();
+    currentMemberDoc = doc.exists ? doc.data() : { name: user.email, tier: 'FREE', role: 'member' };
+    document.getElementById('authBox').classList.add('hidden');
+    document.getElementById('appBox').classList.remove('hidden');
+    document.getElementById('loggedName').textContent = currentMemberDoc.name;
+    document.getElementById('loggedTier').textContent = 'Plan: ' + (currentMemberDoc.tier || 'FREE');
+    document.getElementById('viewToggle').classList.toggle('hidden', currentMemberDoc.role !== 'admin');
+
+    const savedBal = localStorage.getItem('hk_balance');
+    const savedRisk = localStorage.getItem('hk_risk_pct');
+    if(savedBal) document.getElementById('userBalance').value = savedBal;
+    if(savedRisk) document.getElementById('userRiskPct').value = savedRisk;
+
+    listenSignals();
+    if(currentMemberDoc.role === 'admin') listenMembers();
+  } else {
+    document.getElementById('authBox').classList.remove('hidden');
+    document.getElementById('appBox').classList.add('hidden');
+  }
+});
+
+function switchView(view){
+  document.getElementById('memberView').classList.toggle('hidden', view !== 'member');
+  document.getElementById('adminView').classList.toggle('hidden', view !== 'admin');
+  document.getElementById('btn-member').classList.toggle('active', view === 'member');
+  document.getElementById('btn-admin').classList.toggle('active', view === 'admin');
+}
+
+// --- R:R VISUAL METER ---
+function calculateRR(entry, sl, tp) {
+  const risk = Math.abs(entry - sl);
+  const reward = Math.abs(tp - entry);
+  if (!risk || !reward) return { ratio: '1:1', riskPct: 50, rewardPct: 50 };
+  const r = (reward / risk).toFixed(1);
+  const riskShare = Math.round((risk / (risk + reward)) * 100);
+  const rewardShare = 100 - riskShare;
+  return { ratio: `1:${r}`, riskPct: riskShare, rewardPct: rewardShare };
+}
+
+function feedCard(s, isAdmin){
+  const isPremUser = isAdmin || (currentMemberDoc && currentMemberDoc.tier === 'PREMIUM');
+  const val = (v) => isPremUser ? v : `<span class="locked-val">${v}</span>`;
+  
+  const e = parseFloat(s.entry), sl = parseFloat(s.sl), tp = parseFloat(s.tp1);
+  const rr = calculateRR(e, sl, tp);
+  const market = s.market || 'FOREX';
+  const extraTps = [s.tp2, s.tp3].filter(Boolean);
+  const autoLot = isPremUser ? computeLotSize(s) : null;
+  const status = s.roadmapStatus || 'Pending Entry';
+  const code = s.tradeCode || ('#HK-' + s.id.slice(-3).toUpperCase());
+
+  let statusClass = '';
+  if(status.includes('Break-Even')) statusClass = 'be';
+  if(status.includes('TP')) statusClass = 'tp';
+
+  return `
+    <div class="feed-item market-${market}">
+      <div class="feed-top">
+        <div class="feed-pair">${s.pair} <span class="market-badge ${market}">${market}</span></div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="trade-code">${code}</span>
+          <span class="feed-dir ${s.dir}">${s.dir}</span>
+        </div>
+      </div>
+
+      <!-- DYNAMIC ROADMAP STATUS -->
+      <div class="roadmap-badge ${statusClass}">
+        <span>📍 <b>Roadmap:</b> ${status}</span>
+        <span style="font-size:10px;opacity:0.8">${code}</span>
+      </div>
+
+      <div class="rr-visual">
+        <div class="rr-meta">
+          <span style="color:var(--red)">Risk: 1.0</span>
+          <span style="color:var(--green)">Target R:R ${rr.ratio}</span>
+        </div>
+        <div class="rr-track">
+          <div class="rr-risk" style="width:${rr.riskPct}%"></div>
+          <div class="rr-reward" style="width:${rr.rewardPct}%"></div>
+        </div>
+      </div>
+
+      ${autoLot ? `
+      <div class="auto-lot-badge">
+        <span>🛡️ <b>${autoLot.label}:</b></span>
+        <span class="auto-lot-val">${autoLot.val}</span>
+      </div>` : ''}
+
+      <div class="feed-levels">
+        <div><span class="k">Entry</span><span class="v-entry">${val(s.entry)}</span></div>
+        <div><span class="k">Stop Loss</span><span class="v-sl">${val(s.sl)}</span></div>
+        <div><span class="k">TP 1</span><span class="v-tp">${val(s.tp1)}</span></div>
+      </div>
+
+      ${extraTps.length ? `
+      <div class="feed-levels" style="margin-top:6px;">
+        ${s.tp2 ? `<div><span class="k">TP 2</span><span class="v-tp">${val(s.tp2)}</span></div>` : ''}
+        ${s.tp3 ? `<div><span class="k">TP 3</span><span class="v-tp">${val(s.tp3)}</span></div>` : ''}
+      </div>` : ''}
+
+      ${!isPremUser ? '<div class="upgrade-note">🔒 Exact Price Levels & Auto-Lots Are Hidden — Upgrade to Premium to Unlock</div>' : ''}
+
+      ${s.result ? `<div class="result-badge ${s.result}">${s.result}</div>` : ''}
+
+      ${isAdmin ? `
+      <!-- ADMIN ROADMAP CONTROLS -->
+      <div class="roadmap-ctrls">
+        <label>Update Roadmap & Alert WhatsApp</label>
+        <div class="roadmap-btns">
+          <button onclick="updateAndAlert('${s.id}', '🎯 Triggered / In Entry')">🎯 In Entry</button>
+          <button onclick="updateAndAlert('${s.id}', '🛡️ SL Shifted to Break-Even')">🛡️ Break-Even</button>
+          <button onclick="updateAndAlert('${s.id}', '💰 TP 1 Hit (Secure 50%)')">💰 TP 1 Hit</button>
+          <button onclick="updateAndAlert('${s.id}', '💰 TP 2 Hit (Trailing)')">💰 TP 2 Hit</button>
+        </div>
+      </div>` : ''}
+
+      ${isAdmin && !s.result ? `
+        <div class="admin-btns">
+          <button style="background:var(--green);color:#000" onclick="setResult('${s.id}','WIN')">Mark WIN</button>
+          <button style="background:var(--red);color:#fff" onclick="setResult('${s.id}','LOSS')">Mark LOSS</button>
+          <button style="background:var(--ink-dim);color:#000" onclick="setResult('${s.id}','BE')">Mark BE</button>
+        </div>` : ''}
+      ${isAdmin ? `
+        <button class="btn wa" onclick="shareFullSignal('${s.id}')">📲 Share Full Signal to WhatsApp</button>
+        <button class="btn-del" onclick="deleteSignal('${s.id}')">Delete Order</button>
+      ` : ''}
+    </div>`;
+}
+
+function renderMemberFeed() {
+  const html = signalsCache.length ? signalsCache.map(s => feedCard(s, false)).join('') : '<div class="empty">No active setups deployed</div>';
+  document.getElementById('memberFeed').innerHTML = html;
+}
+
+function listenSignals(){
+  db.collection('signals').orderBy('createdAt','desc').limit(50)
+    .onSnapshot(snap => {
+      signalsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderMemberFeed();
+      updateGuardian();
+      if(currentMemberDoc && currentMemberDoc.role === 'admin'){
+        document.getElementById('adminFeed').innerHTML = signalsCache.map(s => feedCard(s, true)).join('');
+      }
+    });
+}
+
+async function postSignal(){
+  const pair = document.getElementById('a-pair').value.trim().toUpperCase();
+  const market = document.getElementById('a-market').value;
+  const dir = document.getElementById('a-dir').value;
+  const entry = document.getElementById('a-entry').value;
+  const sl = document.getElementById('a-sl').value;
+  const tp1 = document.getElementById('a-tp1').value;
+  const tp2 = document.getElementById('a-tp2').value;
+  const tp3 = document.getElementById('a-tp3').value;
+
+  if(!pair || !entry || !sl || !tp1) return alert('Please enter Pair, Entry, SL and TP1');
+
+  // Generate 3-digit trade code (e.g. #HK-218)
+  const randomNum = Math.floor(100 + Math.random() * 900);
+  const tradeCode = '#HK-' + randomNum;
+
+  await db.collection('signals').add({
+    tradeCode,
+    pair, market, dir, entry, sl, tp1,
+    tp2: tp2 || null,
+    tp3: tp3 || null,
+    tag: 'PREMIUM',
+    roadmapStatus: 'Pending Entry',
+    result: null,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  document.getElementById('a-pair').value = '';
+  document.getElementById('a-entry').value = '';
+  document.getElementById('a-sl').value = '';
+  document.getElementById('a-tp1').value = '';
+  document.getElementById('a-tp2').value = '';
+  document.getElementById('a-tp3').value = '';
+}
+
+// Update roadmap and instantly open clean WhatsApp update text
+async function updateAndAlert(id, status){
+  await db.collection('signals').doc(id).update({ roadmapStatus: status });
+  const s = signalsCache.find(x => x.id === id);
+  if(!s) return;
+  const code = s.tradeCode || ('#HK-' + s.id.slice(-3).toUpperCase());
+
+  const msg = `⚡ *TRADE UPDATE [${code}]*\n\n` +
+    `📊 *Asset:* ${s.pair} (${s.dir})\n` +
+    `📍 *Status:* ${status}\n\n` +
+    `🔗 *Live Terminal:*\nhttps://hkhamad.github.io/twhk-portal/`;
+
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+async function setResult(id, result){
+  await db.collection('signals').doc(id).update({ result });
+}
+
+async function deleteSignal(id){
+  if(confirm('Delete this signal?')) await db.collection('signals').doc(id).delete();
+}
+
+function shareFullSignal(id){
+  const s = signalsCache.find(x => x.id === id);
+  if(!s) return;
+  const code = s.tradeCode || ('#HK-' + s.id.slice(-3).toUpperCase());
+
+  const text = `🚨 *TW-HK PREMIUM SIGNAL [${code}]*\n\n` +
+    `📊 *Asset:* ${s.pair} (${s.market})\n` +
+    `⚡ *Action:* ${s.dir}\n\n` +
+    `🎯 *Entry:* ${s.entry}\n` +
+    `🛑 *Stop Loss:* ${s.sl}\n` +
+    `✅ *TP 1:* ${s.tp1}\n` +
+    (s.tp2 ? `✅ *TP 2:* ${s.tp2}\n` : '') +
+    (s.tp3 ? `✅ *TP 3:* ${s.tp3}\n` : '') +
+    `\n📍 *Status:* ${s.roadmapStatus || 'Pending'}\n\n` +
+    `🔗 *Live Terminal:*\nhttps://hkhamad.github.io/twhk-portal/`;
+
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}
+
+// --- MEMBERS MANAGEMENT ---
+function listenMembers(){
+  db.collection('members').orderBy('createdAt','desc').onSnapshot(snap => {
+    const members = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+    document.getElementById('membersList').innerHTML = members.map(m => `
+      <div class="member-row">
+        <div><b>${m.name || 'Member'}</b> (${m.tier || 'FREE'})</div>
+        ${m.role === 'admin' ? '<span style="color:var(--gold)">ADMIN</span>' : `
+        <button class="tier-toggle ${m.tier === 'PREMIUM' ? 'fr' : 'prem'}" onclick="toggleUserTier('${m.uid}','${m.tier === 'PREMIUM' ? 'FREE' : 'PREMIUM'}')">
+          ${m.tier === 'PREMIUM' ? 'Make FREE' : 'Make PREMIUM'}
+        </button>`}
+      </div>
+    `).join('');
+  });
+}
+
+async function toggleUserTier(uid, newTier){
+  await db.collection('members').doc(uid).update({ tier: newTier });
+}
+</script>
+</body>
+</html>
