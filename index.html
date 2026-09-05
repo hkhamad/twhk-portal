@@ -86,6 +86,7 @@
   }
   .roadmap-badge.be{border-color:var(--green);color:var(--green);background:rgba(62,207,142,0.12);}
   .roadmap-badge.tp{border-color:var(--gold-bright);color:var(--gold-bright);background:rgba(232,198,90,0.15);}
+  .roadmap-badge.sl{border-color:var(--red);color:var(--red);background:rgba(226,86,79,0.15);}
 
   /* R:R VISUAL METER */
   .rr-visual{margin:8px 0;background:var(--navy-900);border-radius:8px;padding:8px;}
@@ -519,6 +520,7 @@ function feedCard(s, isAdmin){
   let statusClass = '';
   if(status.includes('BREAK EVEN')) statusClass = 'be';
   if(status.includes('DONE')) statusClass = 'tp';
+  if(status.includes('SL HIT')) statusClass = 'sl';
 
   return `
     <div class="feed-item market-${market}">
@@ -570,7 +572,7 @@ function feedCard(s, isAdmin){
       ${s.result ? `<div class="result-badge ${s.result}">${s.result}</div>` : ''}
 
       ${isAdmin ? `
-      <!-- ADMIN CONTROLS (4 DIRECT FAST OPTIONS) -->
+      <!-- ADMIN CONTROLS (5 DIRECT FAST OPTIONS) -->
       <div class="roadmap-ctrls">
         <label>Update Roadmap & Instant Alert WhatsApp</label>
         <div class="roadmap-btns">
@@ -578,6 +580,7 @@ function feedCard(s, isAdmin){
           <button onclick="updateAndAlert('${s.id}', 'TP 2 DONE 35% BOOKED')">💰 TP 2 Done 35% Booked</button>
           <button onclick="updateAndAlert('${s.id}', 'TP 3 DONE 30% BOOKED')">💰 TP 3 Done 30% Booked</button>
           <button onclick="updateAndAlert('${s.id}', 'BREAK EVEN DONE')">🛡️ Break Even Done</button>
+          <button onclick="updateAndAlert('${s.id}', 'SL HIT')" style="border-color:var(--red);color:var(--red);">🛑 SL Hit</button>
         </div>
       </div>` : ''}
 
@@ -652,7 +655,7 @@ async function updateAndAlert(id, status){
   if(!s) return;
   const code = s.tradeCode || ('#HK-' + s.id.slice(-3).toUpperCase());
 
-  // Format: XAUUSD : TP 1 DONE 35% BOOKED (#HK-123)
+  // Format: XAUUSD : SL HIT (#HK-123)
   const msg = `${s.pair} : ${status} (${code})`;
 
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
