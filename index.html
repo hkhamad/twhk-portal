@@ -14,18 +14,18 @@
     --navy-950:#070c14; --navy-900:#0b1420; --navy-800:#101c2c; --navy-700:#182740;
     --gold:#c9a227; --gold-bright:#e8c65a; --green:#3ecf8e; --red:#e2564f; --blue:#4a9eff;
     --purple:#9b6bd9; --ink:#e9edf3; --ink-dim:#8fa0b8; --line:#22314a;
-    --card-bg:#0b1420; --body-bg:#070c14; --sub-bg:#070c14;
+    --card-bg:#0d1522; --sub-bg:#070c14;
   }
 
   body.light-theme {
     --navy-950:#f4f6fa; --navy-900:#ffffff; --navy-800:#e5eaf2; --navy-700:#d2dbe8;
     --gold:#b88e14; --gold-bright:#8c6b07; --green:#1fa869; --red:#d93830; --blue:#1d7be6;
     --purple:#7f4cc4; --ink:#0f172a; --ink-dim:#64748b; --line:#cbd5e1;
-    --card-bg:#ffffff; --body-bg:#f4f6fa; --sub-bg:#f1f5f9;
+    --card-bg:#ffffff; --sub-bg:#f1f5f9;
   }
 
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  body{margin:0;background:var(--body-bg);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;padding:14px 12px 60px;transition:background 0.25s ease, color 0.25s ease;}
+  body{margin:0;background:var(--navy-950);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;padding:14px 12px 60px;transition:background 0.25s ease, color 0.25s ease;}
   .wrap{max-width:500px;margin:0 auto;}
   
   header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 4px;}
@@ -40,7 +40,7 @@
   .theme-btn, .settings-btn{
     background:var(--navy-900);border:1px solid var(--line);color:var(--gold-bright);
     width:36px;height:36px;border-radius:10px;font-size:16px;display:flex;align-items:center;justify-content:center;
-    cursor:pointer;transition:all 0.2s ease;
+    cursor:pointer;
   }
 
   .radar-card{
@@ -88,17 +88,19 @@
     color:var(--green);font-size:10px;font-weight:800;padding:4px 8px;border-radius:6px;cursor:pointer;
   }
 
-  .feed-item{background:var(--card-bg);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;position:relative;}
+  /* NEW COMPACT INSTITUTIONAL CARD DESIGN */
+  .feed-item{
+    background:var(--card-bg);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px;position:relative;
+    box-shadow:0 8px 24px rgba(0,0,0,0.25);overflow:hidden;
+  }
   .feed-item.market-FOREX{border-top:3px solid var(--gold);}
   .feed-item.market-CRYPTO{border-top:3px solid var(--purple);}
-  .feed-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  
+  .feed-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
   .feed-pair{font-family:Georgia,serif;font-weight:700;font-size:18px;display:flex;align-items:center;gap:6px;}
   .market-badge{font-size:9px;font-weight:800;padding:2px 6px;border-radius:6px;}
   .market-badge.FOREX{background:rgba(201,162,39,.15);color:var(--gold-bright);border:1px solid var(--gold);}
   .market-badge.CRYPTO{background:rgba(155,107,217,.18);color:#8d5cc9;border:1px solid var(--purple);}
-  
-  .feed-meta-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:11px;color:var(--ink-dim);}
-  .feed-time{font-family:monospace;font-size:10px;background:var(--sub-bg);padding:2px 6px;border-radius:5px;border:1px solid var(--line);}
   
   .trade-code{font-family:monospace;font-size:11px;font-weight:700;background:var(--sub-bg);border:1px solid var(--line);color:var(--gold-bright);padding:2px 6px;border-radius:5px;}
   .feed-dir{font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;}
@@ -107,61 +109,56 @@
   
   .roadmap-badge{
     background:rgba(74,158,255,0.12);border:1px solid var(--blue);color:var(--blue);
-    padding:6px 10px;border-radius:8px;font-size:11px;font-weight:700;margin:8px 0;display:flex;align-items:center;justify-content:space-between;
+    padding:6px 10px;border-radius:8px;font-size:11px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;
   }
   .roadmap-badge.pending{border-color:var(--ink-dim);color:var(--ink-dim);background:rgba(143,160,184,0.12);}
   .roadmap-badge.be{border-color:var(--green);color:var(--green);background:rgba(62,207,142,0.12);}
   .roadmap-badge.tp{border-color:var(--gold-bright);color:var(--gold-bright);background:rgba(232,198,90,0.15);}
   .roadmap-badge.sl{border-color:var(--red);color:var(--red);background:rgba(226,86,79,0.15);}
 
-  .live-ticker{
-    background:var(--sub-bg);border:1px dashed var(--line);border-radius:8px;padding:6px 10px;
-    display:flex;justify-content:space-between;align-items:center;font-size:11px;font-family:monospace;margin-top:6px;
+  /* COMPACT DUAL METRIC ROW */
+  .metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;}
+  .metric-tile{
+    background:var(--sub-bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px;
+    display:flex;flex-direction:column;justify-content:center;
   }
-  .live-ticker-val{color:var(--gold-bright);font-weight:800;font-size:12px;}
+  .metric-k{font-size:9px;color:var(--ink-dim);text-transform:uppercase;font-weight:700;margin-bottom:2px;}
+  .metric-v-price{font-size:14px;font-weight:800;color:var(--gold-bright);font-family:monospace;}
+  .metric-v-pnl{font-size:13px;font-weight:800;font-family:monospace;}
+  .metric-v-pnl.win{color:var(--green);}
+  .metric-v-pnl.loss{color:var(--red);}
+  .metric-v-pnl.be{color:var(--ink-dim);}
 
-  .rr-visual{margin:8px 0;background:var(--sub-bg);border-radius:8px;padding:8px;}
-  .rr-track{height:6px;width:100%;border-radius:3px;background:var(--line);display:flex;overflow:hidden;margin-top:5px;}
+  .rr-visual{margin-bottom:8px;background:var(--sub-bg);border:1px solid var(--line);border-radius:8px;padding:8px;}
+  .rr-track{height:6px;width:100%;border-radius:3px;background:var(--line);display:flex;overflow:hidden;margin-top:4px;}
   .rr-risk{background:var(--red);height:100%;}
   .rr-reward{background:var(--green);height:100%;}
   .rr-meta{display:flex;justify-content:space-between;font-size:10px;font-weight:700;}
 
-  .auto-lot-badge{
-    background:var(--sub-bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:8px;
-    display:flex;justify-content:space-between;align-items:center;font-size:11px;
-  }
-  .auto-lot-val{font-size:13px;font-weight:800;color:var(--gold-bright);}
-
-  .pnl-badge{
-    background:var(--sub-bg);border-radius:8px;padding:8px 10px;margin-top:8px;
-    display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;
-  }
-  .pnl-badge.win{border:1px solid var(--green);color:var(--green);background:rgba(62,207,142,0.08);}
-  .pnl-badge.loss{border:1px solid var(--red);color:var(--red);background:rgba(226,86,79,0.08);}
-  .pnl-badge.be{border:1px solid var(--ink-dim);color:var(--ink-dim);background:rgba(143,160,184,0.08);}
-
-  .feed-levels{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:12px;margin-top:8px;}
-  .feed-levels div{background:var(--sub-bg);border-radius:6px;padding:6px;text-align:center;}
-  .feed-levels .k{color:var(--ink-dim);font-size:10px;display:block;}
-  .v-entry{color:var(--blue);font-weight:700;display:block;margin-top:2px;}
-  .v-sl{color:var(--red);font-weight:700;display:block;margin-top:2px;}
-  .v-tp{color:var(--green);font-weight:700;display:block;margin-top:2px;}
+  .feed-levels{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:12px;margin-bottom:8px;}
+  .feed-levels div{background:var(--sub-bg);border:1px solid var(--line);border-radius:8px;padding:6px;text-align:center;}
+  .feed-levels .k{color:var(--ink-dim);font-size:9px;display:block;}
+  .v-entry{color:var(--blue);font-weight:700;display:block;margin-top:2px;font-family:monospace;}
+  .v-sl{color:var(--red);font-weight:700;display:block;margin-top:2px;font-family:monospace;}
+  .v-tp{color:var(--green);font-weight:700;display:block;margin-top:2px;font-family:monospace;}
 
   .locked-val{filter:blur(6px);user-select:none;opacity:0.75;}
   .upgrade-note{
-    margin-top:10px;font-size:11px;color:var(--gold);background:rgba(201,162,39,.1);
+    margin-bottom:8px;font-size:11px;color:var(--gold);background:rgba(201,162,39,.1);
     border:1px dashed var(--gold);border-radius:10px;padding:10px;text-align:center;font-weight:600;line-height:1.4;
   }
   .upgrade-note.crypto{color:#8d5cc9;background:rgba(155,107,217,.1);border-color:var(--purple);}
 
-  .disclaimer-text{
-    font-size:10px;color:var(--ink-dim);text-align:center;margin-top:10px;
-    padding-top:6px;border-top:1px dashed var(--line);letter-spacing:0.5px;
+  /* CARD FOOTER INFO */
+  .card-footer-info{
+    display:flex;justify-content:space-between;align-items:center;padding:6px 0 0;
+    border-top:1px dashed var(--line);font-size:10px;color:var(--ink-dim);margin-top:4px;
   }
+  .auto-lot-text{font-weight:700;color:var(--ink);}
 
   /* ADMIN COLLAPSIBLE ROADMAP BOX (TP / BE / SL) */
   .roadmap-box-card{
-    margin-top:10px;background:var(--sub-bg);border:1px dashed var(--gold);border-radius:8px;overflow:hidden;
+    margin-top:8px;background:var(--sub-bg);border:1px dashed var(--gold);border-radius:8px;overflow:hidden;
   }
   .roadmap-toggle-btn{
     width:100%;background:transparent;border:none;color:var(--gold-bright);padding:8px 10px;font-size:11px;font-weight:700;
@@ -177,7 +174,7 @@
 
   /* DISCUSSION COMPONENT */
   .chat-box-card{
-    margin-top:10px;background:var(--sub-bg);border:1px solid var(--line);border-radius:10px;overflow:hidden;
+    margin-top:8px;background:var(--sub-bg);border:1px solid var(--line);border-radius:10px;overflow:hidden;
   }
   .chat-toggle-btn{
     width:100%;background:transparent;border:none;color:var(--ink-dim);padding:8px 10px;font-size:11px;font-weight:700;
@@ -198,7 +195,7 @@
   .empty{color:var(--ink-dim);font-size:13px;text-align:center;padding:20px 0;}
   .hidden{display:none !important;}
   .errbox{font-size:12px;color:var(--red);margin-top:-4px;margin-bottom:8px;min-height:14px;}
-  .result-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;margin-top:8px;display:inline-block;}
+  .result-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;margin-top:6px;display:inline-block;}
   .result-badge.WIN{background:rgba(62,207,142,.15);color:var(--green);}
   .result-badge.LOSS{background:rgba(226,86,79,.15);color:var(--red);}
   .result-badge.BE{background:rgba(143,160,184,.15);color:var(--ink-dim);}
@@ -384,9 +381,9 @@
     <div class="settings-section">
       <label>Preferences</label>
       <div style="font-size:12px;color:var(--ink-dim);background:var(--sub-bg);padding:8px 10px;border-radius:8px;border:1px solid var(--line);">
-        Timezone: <b>UTC-4 EST (New York)</b><br>
+        Timezone Reference: <b>UTC-4 EST (New York)</b><br>
         Daily Reset: <b>12:00 AM Pakistan Time (PKT)</b><br>
-        Feed Engine: <b>Binance Spot / Forex.com & Oanda Interbank Spot</b>
+        Feed Engine: <b>Binance Spot / Forex.com Interbank Real-Rate</b>
       </div>
     </div>
 
@@ -421,7 +418,7 @@ const livePrices = {};
 let cryptoWs = null;
 const activeCommentsListeners = {};
 
-// LIGHT & DARK THEME TOGGLE
+// LIGHT & DARK THEME HANDLER
 function initTheme() {
   const saved = localStorage.getItem('hk_theme');
   if (saved === 'light') {
@@ -618,7 +615,7 @@ async function fillMarketNow() {
   let cur = livePrices[cleanKey] || livePrices[pInput.toUpperCase()];
   
   if (!cur) {
-    document.getElementById('a-entry').placeholder = 'Fetching live rate...';
+    document.getElementById('a-entry').placeholder = 'Connecting price...';
     await fetchSinglePairPrice(pInput, mSelect);
     cur = livePrices[cleanKey] || livePrices[pInput.toUpperCase()];
   }
@@ -673,15 +670,15 @@ function computePnL(signal, autoLot) {
     return { text: `Loss: -$${autoLot.riskDollar.toFixed(2)}`, type: 'loss' };
   }
   if (res === 'BE' || status.includes('BREAK EVEN')) {
-    return { text: `Result: $0.00 (Break-Even Secured)`, type: 'be' };
+    return { text: `Result: $0.00 (BE)`, type: 'be' };
   }
   if (status.includes('TP 3') || res === 'WIN') {
     const pnl = Math.abs(tp3 - entry) * autoLot.rawLot * (signal.market === 'CRYPTO' ? 1 : 100);
-    return { text: `Profit: +$${pnl.toFixed(2)} (Full Target)`, type: 'win' };
+    return { text: `Profit: +$${pnl.toFixed(2)}`, type: 'win' };
   }
 
   if (status.includes('WAITING') || status.includes('PENDING')) {
-    return { text: `Order Pending (Waiting Entry)`, type: 'be' };
+    return { text: `Waiting Entry`, type: 'be' };
   }
 
   const cleanKey = normalizePair(signal.pair, signal.market);
@@ -701,14 +698,14 @@ function computePnL(signal, autoLot) {
     const isProfit = parseFloat(floatingDollar) >= 0;
 
     return {
-      text: `${isProfit ? 'Profit' : 'Loss'}: ${isProfit ? '+' : ''}$${floatingDollar}`,
+      text: `${isProfit ? '+' : ''}$${floatingDollar}`,
       type: isProfit ? 'win' : 'loss'
     };
   }
 
-  if (status.includes('TP 2')) return { text: `Profit: 70% Volume Secured`, type: 'win' };
-  if (status.includes('TP 1')) return { text: `Profit: 35% Volume Secured`, type: 'win' };
-  return { text: `Connecting Feed...`, type: 'be' };
+  if (status.includes('TP 2')) return { text: `TP 2 Done`, type: 'win' };
+  if (status.includes('TP 1')) return { text: `TP 1 Done`, type: 'win' };
+  return { text: `Connecting...`, type: 'be' };
 }
 
 function subscribeToMarketFeeds() {
@@ -834,8 +831,8 @@ function updateLiveCardDOM(sym, price) {
       const pnlData = computePnL(s, autoLot);
       const pnlEl = document.getElementById(`pnl-container-${s.id}`);
       if (pnlEl && pnlData) {
-        pnlEl.className = `pnl-badge ${pnlData.type}`;
-        pnlEl.innerHTML = `<span>📊 <b>Real-Time PnL:</b></span><span>${pnlData.text}</span>`;
+        pnlEl.className = `metric-v-pnl ${pnlData.type}`;
+        pnlEl.textContent = pnlData.text;
       }
     }
   });
@@ -907,7 +904,6 @@ async function checkAutoTargets() {
   }
 }
 
-// TOGGLE COLLAPSIBLE ADMIN ROADMAP CONTROLS
 function toggleRoadmapBox(signalId) {
   const panel = document.getElementById(`roadmap-panel-${signalId}`);
   if (panel) panel.classList.toggle('hidden');
@@ -1094,19 +1090,23 @@ function feedCard(s, isAdmin){
         </div>
       </div>
 
-      <div class="feed-meta-row">
-        <span>🕒 Execution Time:</span>
-        <span class="feed-time">${dateFormatted || 'Just Now'}</span>
-      </div>
-
       <div class="roadmap-badge ${statusClass}">
         <span>📍 <b>Status:</b> ${status}</span>
         <span style="font-size:10px;opacity:0.8">${code}</span>
       </div>
 
-      <div class="live-ticker">
-        <span>⚡ Real-Time Price:</span>
-        <span class="live-ticker-val" data-ticker-pair="${cleanPair}">${typeof currentLivePrice === 'number' ? currentLivePrice.toFixed(2) : currentLivePrice}</span>
+      <!-- COMPACT DUAL METRIC ROW (LIVE PRICE & REAL-TIME PNL) -->
+      <div class="metrics-grid">
+        <div class="metric-tile">
+          <span class="metric-k">⚡ Real-Time Price</span>
+          <span class="metric-v-price" data-ticker-pair="${cleanPair}">${typeof currentLivePrice === 'number' ? currentLivePrice.toFixed(2) : currentLivePrice}</span>
+        </div>
+        <div class="metric-tile">
+          <span class="metric-k">📊 Real-Time PnL</span>
+          <span id="pnl-container-${s.id}" class="metric-v-pnl ${pnlData ? pnlData.type : 'be'}">
+            ${pnlData ? pnlData.text : 'Calculating...'}
+          </span>
+        </div>
       </div>
 
       <div class="rr-visual">
@@ -1118,17 +1118,6 @@ function feedCard(s, isAdmin){
           <div class="rr-risk" style="width:${rr.riskPct}%"></div>
           <div class="rr-reward" style="width:${rr.rewardPct}%"></div>
         </div>
-      </div>
-
-      ${autoLot ? `
-      <div class="auto-lot-badge">
-        <span>🛡️ <b>${autoLot.label}:</b></span>
-        <span class="auto-lot-val">${autoLot.val}</span>
-      </div>` : ''}
-
-      <div id="pnl-container-${s.id}" class="pnl-badge ${pnlData ? pnlData.type : 'be'}">
-        <span>📊 <b>Real-Time PnL:</b></span>
-        <span>${pnlData ? pnlData.text : 'Calculating...'}</span>
       </div>
 
       <div class="feed-levels">
@@ -1147,6 +1136,12 @@ function feedCard(s, isAdmin){
         <div class="upgrade-note ${market === 'CRYPTO' ? 'crypto' : ''}">
           🔒 ${market} Access Protected — Upgrade to Premium
         </div>` : ''}
+
+      <!-- FOOTER INFO: LOT SIZE & DATE/TIME IN SYNC -->
+      <div class="card-footer-info">
+        <span>${autoLot ? `${autoLot.label}: <b class="auto-lot-text">${autoLot.val}</b>` : 'Trading Terminal'}</span>
+        <span>📅 ${dateFormatted || 'Just Now'}</span>
+      </div>
 
       ${s.result ? `<div class="result-badge ${s.result}">${s.result}</div>` : ''}
 
@@ -1169,7 +1164,7 @@ function feedCard(s, isAdmin){
         </div>
       </div>` : ''}
 
-      <!-- TRADE DISCUSSION ROOM -->
+      <!-- DISCUSSION ROOM COMPONENT -->
       <div class="chat-box-card">
         <button class="chat-toggle-btn" onclick="toggleChatBox('${s.id}')">
           <span>💬 Trade Discussion & Updates</span>
@@ -1195,8 +1190,6 @@ function feedCard(s, isAdmin){
       ${isAdmin ? `
         <button class="btn-del" onclick="deleteSignal('${s.id}')">Delete Order Setup</button>
       ` : ''}
-
-      <div class="disclaimer-text">BE Aware: Trade On Your Own Risk</div>
     </div>`;
 }
 
@@ -1208,7 +1201,7 @@ function buildTeaserCardHTML(s) {
   const dateFormatted = formatPktDateTime(new Date());
 
   return `
-    <div class="feed-item market-${market}" style="background:#070c14;border:1px solid #22314a;border-radius:14px;padding:16px;">
+    <div class="feed-item market-${market}" style="background:#070c14;border:1px solid #22314a;border-radius:16px;padding:16px;">
       <div class="feed-top">
         <div class="feed-pair" style="font-size:20px;color:#fff;">${s.pair} <span class="market-badge ${market}">${market}</span></div>
         <div style="display:flex;align-items:center;gap:6px;">
@@ -1217,41 +1210,40 @@ function buildTeaserCardHTML(s) {
         </div>
       </div>
 
-      <div class="feed-meta-row" style="margin-bottom:8px;">
-        <span style="color:#8fa0b8;">🕒 Execution Time:</span>
-        <span class="feed-time" style="background:#101c2c;color:#e9edf3;">${dateFormatted}</span>
-      </div>
-
-      <div class="roadmap-badge" style="margin:10px 0;">
+      <div class="roadmap-badge" style="margin:8px 0;">
         <span>📍 Status: ${s.roadmapStatus || 'ENTRY TRIGGERED'}</span>
         <span style="font-size:10px;opacity:0.8">${code}</span>
       </div>
 
-      <div class="rr-visual" style="margin:10px 0;background:#101c2c;">
+      <div class="rr-visual" style="margin:8px 0;background:#101c2c;">
         <div class="rr-meta">
           <span style="color:var(--red)">Risk: 1.0</span>
           <span style="color:var(--green)">Target R:R ${rr.ratio}</span>
         </div>
-        <div class="rr-track" style="margin-top:6px;background:#22314a;">
+        <div class="rr-track" style="margin-top:4px;background:#22314a;">
           <div class="rr-risk" style="width:${rr.riskPct}%"></div>
           <div class="rr-reward" style="width:${rr.rewardPct}%"></div>
         </div>
       </div>
 
-      <div class="feed-levels" style="margin-top:10px;">
+      <div class="feed-levels" style="margin-top:8px;">
         <div style="background:#101c2c;"><span class="k">Entry</span><span class="v-entry" style="filter:blur(6px);opacity:0.7;">000.00</span></div>
         <div style="background:#101c2c;"><span class="k">Stop Loss</span><span class="v-sl" style="filter:blur(6px);opacity:0.7;">000.00</span></div>
         <div style="background:#101c2c;"><span class="k">Target 1</span><span class="v-tp" style="filter:blur(6px);opacity:0.7;">000.00</span></div>
       </div>
 
-      <div class="upgrade-note ${market === 'CRYPTO' ? 'crypto' : ''}" style="margin-top:12px;padding:12px;">
+      <div class="upgrade-note ${market === 'CRYPTO' ? 'crypto' : ''}" style="margin-top:8px;padding:10px;">
         🔒 ${market} Access Protected — Upgrade to Premium
       </div>
 
-      <div class="disclaimer-text" style="margin-top:12px;">BE Aware: Trade On Your Own Risk</div>
+      <div class="card-footer-info" style="margin-top:8px;">
+        <span style="color:#8fa0b8;">TW-HK Signals</span>
+        <span style="color:#8fa0b8;">📅 ${dateFormatted}</span>
+      </div>
     </div>`;
 }
 
+// OPEN TRADES PERSISTENCE (ACTIVE TRADES NEVER DISAPPEAR AFTER MIDNIGHT)
 function renderMemberFeed() {
   const pktMidnight = getPktMidnightTimestamp();
   
@@ -1262,8 +1254,10 @@ function renderMemberFeed() {
     const status = (s.roadmapStatus || '').toUpperCase();
     const isClosed = s.result || status.includes('SL HIT') || status.includes('BREAK EVEN DONE') || status.includes('TP 3');
 
+    // Open trades always remain visible
     if (!isClosed) return true;
 
+    // Closed trades reset after 12:00 AM PKT
     if (s.createdAt) {
       const sTime = s.createdAt.toMillis ? s.createdAt.toMillis() : new Date(s.createdAt).getTime();
       return sTime >= pktMidnight;
@@ -1316,7 +1310,7 @@ async function postSignal(){
         entry = cur;
         initialStatus = 'ENTRY TRIGGERED';
       } else {
-        return alert('Market price connecting... please enter price manually or wait 2 seconds.');
+        return alert('Connecting real-time feed... please wait 2 seconds.');
       }
     }
   } else {
@@ -1331,7 +1325,7 @@ async function postSignal(){
 
   const btn = document.getElementById('btnPublish');
   btn.disabled = true;
-  btn.textContent = 'Generating Photo...';
+  btn.textContent = 'Publishing...';
 
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   let randStr = '';
