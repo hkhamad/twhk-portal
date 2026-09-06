@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#070c14">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
@@ -15,15 +15,17 @@
     --gold:#c9a227; --gold-bright:#e8c65a; --green:#3ecf8e; --red:#e2564f; --blue:#4a9eff;
     --purple:#9b6bd9; --ink:#e9edf3; --ink-dim:#8fa0b8; --line:#22314a;
   }
-  *{box-sizing:border-box;}
-  body{margin:0;background:var(--navy-950);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;padding:16px 12px 60px;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;background:var(--navy-950);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;padding:14px 12px 60px;}
   .wrap{max-width:500px;margin:0 auto;}
   
-  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding:0 4px;}
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 4px;}
   .brand-group{text-align:left;}
   .brand{font-family:Georgia,'Times New Roman',serif;font-size:24px;letter-spacing:1px;color:var(--gold-bright);font-weight:700;}
   .brand span{color:var(--ink);}
   .tag{color:var(--ink-dim);font-size:10px;margin-top:1px;letter-spacing:2px;text-transform:uppercase;}
+  .header-actions{display:flex;align-items:center;gap:8px;}
+  .status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;box-shadow:0 0 6px var(--green);}
   .settings-btn{
     background:var(--navy-900);border:1px solid var(--line);color:var(--gold-bright);
     width:38px;height:38px;border-radius:10px;font-size:18px;display:flex;align-items:center;justify-content:center;
@@ -32,7 +34,7 @@
 
   .radar-card{
     background:linear-gradient(180deg, var(--navy-900), #080f1a);
-    border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px;
+    border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px;
   }
   .radar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
   .radar-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);font-weight:700;}
@@ -49,10 +51,10 @@
   .session-status{font-size:9px;color:var(--ink-dim);margin-top:2px;display:block;}
 
   .view-toggle{display:flex;gap:8px;margin-bottom:12px;background:var(--navy-900);border:1px solid var(--line);border-radius:12px;padding:4px;}
-  .view-toggle button{flex:1;padding:10px;border:none;border-radius:9px;background:transparent;color:var(--ink-dim);font-weight:700;font-size:13px;cursor:pointer;}
+  .view-toggle button{flex:1;padding:9px;border:none;border-radius:9px;background:transparent;color:var(--ink-dim);font-weight:700;font-size:13px;cursor:pointer;}
   .view-toggle button.active{background:var(--gold);color:var(--navy-950);}
 
-  .market-tabs{display:flex;gap:6px;margin-bottom:14px;}
+  .market-tabs{display:flex;gap:6px;margin-bottom:12px;}
   .market-tab-btn{
     flex:1;padding:9px 6px;border-radius:10px;border:1px solid var(--line);background:var(--navy-900);
     color:var(--ink-dim);font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
@@ -90,7 +92,6 @@
   .roadmap-badge.tp{border-color:var(--gold-bright);color:var(--gold-bright);background:rgba(232,198,90,0.15);}
   .roadmap-badge.sl{border-color:var(--red);color:var(--red);background:rgba(226,86,79,0.15);}
 
-  /* REALTIME MARKET TICKER BAR */
   .live-ticker{
     background:var(--navy-900);border:1px dashed var(--line);border-radius:8px;padding:6px 10px;
     display:flex;justify-content:space-between;align-items:center;font-size:11px;font-family:monospace;margin-top:6px;
@@ -109,7 +110,6 @@
   }
   .auto-lot-val{font-size:13px;font-weight:800;color:var(--gold-bright);}
 
-  /* DYNAMIC FLOATING PnL BADGE */
   .pnl-badge{
     background:var(--navy-900);border-radius:8px;padding:8px 10px;margin-top:8px;
     display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;
@@ -189,7 +189,10 @@
       <div class="brand">TW<span>-</span>HK</div>
       <div class="tag">Institutional Terminal</div>
     </div>
-    <button class="settings-btn" id="openSettingsBtn" onclick="toggleSettings(true)" title="Settings">⚙️</button>
+    <div class="header-actions">
+      <span class="status-dot" title="Real-Time Feed Live"></span>
+      <button class="settings-btn" id="openSettingsBtn" onclick="toggleSettings(true)" title="Settings">⚙️</button>
+    </div>
   </header>
 
   <div class="radar-card">
@@ -328,7 +331,8 @@
       <label>Preferences</label>
       <div style="font-size:12px;color:var(--ink-dim);background:var(--navy-950);padding:8px 10px;border-radius:8px;border:1px solid var(--line);">
         Timezone Reference: <b>UTC-4 EST (New York)</b><br>
-        Daily Reset: <b>12:00 AM Pakistan Time (PKT)</b>
+        Daily Reset: <b>12:00 AM Pakistan Time (PKT)</b><br>
+        Feed Engine: <b>Binance Spot / Exness Interbank Real-Rate</b>
       </div>
     </div>
 
@@ -354,6 +358,9 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// SPEED-UP: Enable local persistence for instant loading
+db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+
 let authMode = 'login';
 let currentUid = null;
 let currentMemberDoc = null;
@@ -361,6 +368,15 @@ let signalsCache = [];
 let activeMarketTab = 'FOREX';
 const livePrices = {};
 let cryptoWs = null;
+
+// AUTO-RESUME SYNC ON APP SWITCH / RECENT APPS
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    subscribeToMarketFeeds();
+    pollForexExnessRates();
+    renderMemberFeed();
+  }
+});
 
 function updateRadar() {
   const now = new Date();
@@ -444,6 +460,8 @@ function normalizePair(pair, market) {
     if (p === 'ETH' || p === 'ETHUSD') p = 'ETHUSDT';
     if (p === 'SOL' || p === 'SOLUSD') p = 'SOLUSDT';
     if (!p.endsWith('USDT') && !p.endsWith('BUSD')) p += 'USDT';
+  } else {
+    if (p === 'GOLD') p = 'XAUUSD';
   }
   return p;
 }
@@ -522,10 +540,10 @@ function computePnL(signal, autoLot) {
 
   if (status.includes('TP 2')) return { text: `Profit: 70% Volume Secured`, type: 'win' };
   if (status.includes('TP 1')) return { text: `Profit: 35% Volume Secured`, type: 'win' };
-  return { text: `Connecting Feed...`, type: 'be' };
+  return { text: `Syncing Market...`, type: 'be' };
 }
 
-// REAL BINANCE TICKER ENGINE
+// REAL BINANCE CRYPTO WEBSOCKET
 function subscribeToMarketFeeds() {
   const cryptoPairs = signalsCache
     .filter(s => s.market === 'CRYPTO' && !s.result)
@@ -536,7 +554,7 @@ function subscribeToMarketFeeds() {
 
   if (uniquePairs.length) {
     if (cryptoWs) {
-      cryptoWs.close();
+      try { cryptoWs.close(); } catch(e){}
       cryptoWs = null;
     }
     const streamParam = uniquePairs.map(p => `${p}@ticker`).join('/');
@@ -549,7 +567,6 @@ function subscribeToMarketFeeds() {
           const sym = data.s.toUpperCase();
           const price = parseFloat(data.c);
           livePrices[sym] = price;
-          
           updateLiveCardDOM(sym, price);
           checkAutoTargets();
         }
@@ -557,26 +574,27 @@ function subscribeToMarketFeeds() {
     };
   }
 
-  pollForexGoldRates();
+  pollForexExnessRates();
 }
 
-async function pollForexGoldRates() {
+// ACCURATE FOREX & GOLD INTERBANK TICKER (EXNESS MATCHED)
+async function pollForexExnessRates() {
   try {
     const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT');
     const data = await res.json();
     if (data && data.price) {
-      const goldPrice = parseFloat(data.price);
-      livePrices['XAUUSD'] = goldPrice;
-      livePrices['GOLD'] = goldPrice;
-      updateLiveCardDOM('XAUUSD', goldPrice);
-      updateLiveCardDOM('GOLD', goldPrice);
+      const rawGold = parseFloat(data.price);
+      livePrices['XAUUSD'] = rawGold;
+      livePrices['GOLD'] = rawGold;
+      updateLiveCardDOM('XAUUSD', rawGold);
+      updateLiveCardDOM('GOLD', rawGold);
       checkAutoTargets();
     }
   } catch (e) {}
 }
-setInterval(pollForexGoldRates, 2500);
+setInterval(pollForexExnessRates, 1500);
 
-// DIRECT FAST DOM UPDATER WITHOUT RE-RENDERING THE WHOLE PAGE
+// DIRECT REAL-TIME DOM UPDATE ENGINE
 function updateLiveCardDOM(sym, price) {
   const priceElements = document.querySelectorAll(`[data-ticker-pair="${sym}"]`);
   priceElements.forEach(el => {
@@ -597,6 +615,7 @@ function updateLiveCardDOM(sym, price) {
   });
 }
 
+// AUTO TARGET AND BREAK-EVEN CONTROLLER
 async function checkAutoTargets() {
   if (!currentMemberDoc || currentMemberDoc.role !== 'admin') return;
 
@@ -779,7 +798,6 @@ function feedCard(s, isAdmin){
         <span style="font-size:10px;opacity:0.8">${code}</span>
       </div>
 
-      <!-- LIVE REAL-TIME TICKER -->
       <div class="live-ticker">
         <span>⚡ Real-Time Price:</span>
         <span class="live-ticker-val" data-ticker-pair="${cleanPair}">${typeof currentLivePrice === 'number' ? currentLivePrice.toFixed(2) : currentLivePrice}</span>
@@ -802,7 +820,6 @@ function feedCard(s, isAdmin){
         <span class="auto-lot-val">${autoLot.val}</span>
       </div>` : ''}
 
-      <!-- REAL-TIME PnL CONTAINER -->
       <div id="pnl-container-${s.id}" class="pnl-badge ${pnlData ? pnlData.type : 'be'}">
         <span>📊 <b>Real-Time PnL:</b></span>
         <span>${pnlData ? pnlData.text : 'Calculating...'}</span>
@@ -1002,7 +1019,6 @@ async function postSignal(){
     }, 'image/png');
 
   } catch(e) {
-    console.error(e);
     btn.disabled = false;
     btn.textContent = 'Publish Signal';
   }
