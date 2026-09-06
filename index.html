@@ -13,7 +13,7 @@
   :root{
     --navy-950:#070c14; --navy-900:#0b1420; --navy-800:#101c2c; --navy-700:#182740;
     --gold:#c9a227; --gold-bright:#e8c65a; --green:#3ecf8e; --red:#e2564f; --blue:#4a9eff;
-    --ink:#e9edf3; --ink-dim:#8fa0b8; --line:#22314a;
+    --purple:#9b6bd9; --ink:#e9edf3; --ink-dim:#8fa0b8; --line:#22314a;
   }
   *{box-sizing:border-box;}
   body{margin:0;background:var(--navy-950);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;padding:16px 12px 60px;}
@@ -51,9 +51,18 @@
   .session-pill.macro .session-name{color:var(--gold-bright);}
   .session-status{font-size:9px;color:var(--ink-dim);margin-top:2px;display:block;}
 
-  .view-toggle{display:flex;gap:8px;margin-bottom:14px;background:var(--navy-900);border:1px solid var(--line);border-radius:12px;padding:4px;}
+  .view-toggle{display:flex;gap:8px;margin-bottom:12px;background:var(--navy-900);border:1px solid var(--line);border-radius:12px;padding:4px;}
   .view-toggle button{flex:1;padding:10px;border:none;border-radius:9px;background:transparent;color:var(--ink-dim);font-weight:700;font-size:13px;cursor:pointer;}
   .view-toggle button.active{background:var(--gold);color:var(--navy-950);}
+
+  /* SEPARATE MARKET TABS (FOREX VS CRYPTO) */
+  .market-tabs{display:flex;gap:6px;margin-bottom:14px;}
+  .market-tab-btn{
+    flex:1;padding:9px 6px;border-radius:10px;border:1px solid var(--line);background:var(--navy-900);
+    color:var(--ink-dim);font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+  }
+  .market-tab-btn.active.forex{background:rgba(201,162,39,0.15);border-color:var(--gold);color:var(--gold-bright);}
+  .market-tab-btn.active.crypto{background:rgba(155,107,217,0.15);border-color:var(--purple);color:#c9a9f2;}
 
   .panel{background:var(--navy-900);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px;}
   .panel h2{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin:0 0 10px;display:flex;align-items:center;gap:6px;}
@@ -67,12 +76,12 @@
   /* SIGNAL CARDS */
   .feed-item{background:var(--navy-950);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;position:relative;}
   .feed-item.market-FOREX{border-top:3px solid var(--gold);}
-  .feed-item.market-CRYPTO{border-top:3px solid #9b6bd9;}
+  .feed-item.market-CRYPTO{border-top:3px solid var(--purple);}
   .feed-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
   .feed-pair{font-family:Georgia,serif;font-weight:700;font-size:17px;display:flex;align-items:center;gap:6px;}
   .market-badge{font-size:9px;font-weight:800;padding:2px 6px;border-radius:6px;}
   .market-badge.FOREX{background:rgba(201,162,39,.15);color:var(--gold-bright);border:1px solid var(--gold);}
-  .market-badge.CRYPTO{background:rgba(155,107,217,.18);color:#c9a9f2;border:1px solid #9b6bd9;}
+  .market-badge.CRYPTO{background:rgba(155,107,217,.18);color:#c9a9f2;border:1px solid var(--purple);}
   .trade-code{font-family:monospace;font-size:11px;font-weight:700;background:var(--navy-900);border:1px solid var(--line);color:var(--gold-bright);padding:2px 6px;border-radius:5px;}
   .feed-dir{font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;}
   .feed-dir.BUY, .feed-dir.LONG{background:rgba(62,207,142,.15);color:var(--green);border:1px solid var(--green);}
@@ -118,6 +127,7 @@
 
   .locked-val{filter:blur(5px);user-select:none;}
   .upgrade-note{margin-top:8px;font-size:11px;color:var(--gold);background:rgba(201,162,39,.1);border:1px dashed var(--gold);border-radius:8px;padding:8px;text-align:center;}
+  .upgrade-note.crypto{color:#c9a9f2;background:rgba(155,107,217,.1);border-color:var(--purple);}
 
   /* DISCLAIMER NOTICE */
   .disclaimer-text{
@@ -164,10 +174,9 @@
   .logout-action{background:rgba(226,86,79,0.12);border:1px solid var(--red);color:var(--red);padding:10px;border-radius:10px;width:100%;font-weight:700;font-size:13px;cursor:pointer;margin-top:14px;}
 
   /* MEMBERS MANAGEMENT */
-  .member-row{background:var(--navy-950);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-size:12px;}
-  .tier-toggle{border:none;border-radius:5px;padding:4px 8px;font-size:10px;font-weight:700;cursor:pointer;}
-  .tier-toggle.prem{background:rgba(232,198,90,.18);color:var(--gold-bright);}
-  .tier-toggle.fr{background:rgba(143,160,184,.15);color:var(--ink-dim);}
+  .member-row{background:var(--navy-950);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px;display:flex;flex-direction:column;gap:6px;}
+  .member-row-top{display:flex;justify-content:space-between;align-items:center;font-size:12px;}
+  .tier-select{background:var(--navy-900);border:1px solid var(--line);color:var(--gold-bright);font-size:11px;padding:4px 8px;border-radius:6px;margin-bottom:0;}
 </style>
 </head>
 <body>
@@ -221,8 +230,18 @@
 
     <!-- MEMBER VIEW -->
     <div id="memberView">
+      <!-- SEPARATE TABS FOR FOREX & CRYPTO -->
+      <div class="market-tabs">
+        <button id="tab-forex" class="market-tab-btn active forex" onclick="switchMarketTab('FOREX')">
+          📈 Forex & Metals
+        </button>
+        <button id="tab-crypto" class="market-tab-btn crypto" onclick="switchMarketTab('CRYPTO')">
+          🪙 Crypto Futures
+        </button>
+      </div>
+
       <div class="panel">
-        <h2>Live Signals</h2>
+        <h2 id="feedSectionTitle">Forex Signals Feed</h2>
         <div id="memberFeed"><div class="empty">Scanning active market setups...</div></div>
       </div>
     </div>
@@ -310,7 +329,7 @@
       <label>Preferences</label>
       <div style="font-size:12px;color:var(--ink-dim);background:var(--navy-950);padding:8px 10px;border-radius:8px;border:1px solid var(--line);">
         Timezone Reference: <b>UTC-4 EST (New York)</b><br>
-        Reset Time: <b>12:00 AM Pakistan Time (PKT)</b>
+        Daily Reset: <b>12:00 AM Pakistan Time (PKT)</b>
       </div>
     </div>
 
@@ -339,6 +358,7 @@ let authMode = 'login';
 let currentUid = null;
 let currentMemberDoc = null;
 let signalsCache = [];
+let activeMarketTab = 'FOREX'; // 'FOREX' or 'CRYPTO'
 
 // --- SESSION RADAR LOGIC ---
 function updateRadar() {
@@ -376,14 +396,22 @@ function updateRadar() {
 setInterval(updateRadar, 1000);
 updateRadar();
 
-// --- PAKISTAN TIME (12:00 AM RESET HELPER) ---
+// --- 12:00 AM PKT RESET ---
 function getPktMidnightTimestamp() {
   const now = new Date();
   const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-  // Pakistan is UTC+5
   const pktDate = new Date(utc + (5 * 3600000));
-  pktDate.setHours(0, 0, 0, 0); // Today's 12:00 AM PKT
-  return pktDate.getTime() - (5 * 3600000); // Back to UTC milliseconds
+  pktDate.setHours(0, 0, 0, 0);
+  return pktDate.getTime() - (5 * 3600000);
+}
+
+// --- MARKET TAB SWITCHING ---
+function switchMarketTab(market) {
+  activeMarketTab = market;
+  document.getElementById('tab-forex').classList.toggle('active', market === 'FOREX');
+  document.getElementById('tab-crypto').classList.toggle('active', market === 'CRYPTO');
+  document.getElementById('feedSectionTitle').textContent = market === 'FOREX' ? 'Forex & Metals Signals' : 'Crypto Futures Signals';
+  renderMemberFeed();
 }
 
 // --- SETTINGS MODAL & RISK CONFIG ---
@@ -418,7 +446,6 @@ function computeLotSize(signal) {
   let riskDollar = parseFloat(localStorage.getItem('hk_risk_amt')) || 0;
   const bal = parseFloat(localStorage.getItem('hk_balance')) || 0;
 
-  // Fallback: 1% of balance if risk amount isn't explicitly set
   if (!riskDollar && bal > 0) riskDollar = bal * 0.01;
   if (!riskDollar) return null;
 
@@ -455,22 +482,18 @@ function computePnL(signal, autoLot) {
   const tp2 = parseFloat(signal.tp2) || tp1;
   const tp3 = parseFloat(signal.tp3) || tp2;
 
-  // Loss hit
   if (res === 'LOSS' || status.includes('SL HIT')) {
     return { text: `Loss: -$${autoLot.riskDollar.toFixed(2)}`, type: 'loss' };
   }
-  // Break Even
   if (res === 'BE' || status.includes('BREAK EVEN')) {
     return { text: `Result: $0.00 (Break-Even Secured)`, type: 'be' };
   }
 
-  // Calculate standard tick values
   const pair = (signal.pair || '').toUpperCase();
   let multiplier = 100000;
   if (pair.includes('XAU') || pair.includes('GOLD')) multiplier = 100;
   if (autoLot.isCrypto) multiplier = 1;
 
-  // Check TP hits
   if (status.includes('TP 3') || res === 'WIN') {
     const pnl = Math.abs(tp3 - entry) * autoLot.rawLot * multiplier;
     return { text: `Profit: +$${pnl.toFixed(2)} (Full TP Target)`, type: 'win' };
@@ -569,16 +592,28 @@ function calculateRR(entry, sl, tp) {
   return { ratio: `1:${r}`, riskPct: riskShare, rewardPct: rewardShare };
 }
 
+// CHECK SEPARATE ACCESS PER USER
+function hasMarketAccess(market, isAdmin) {
+  if (isAdmin) return true;
+  if (!currentMemberDoc) return false;
+  const userTier = currentMemberDoc.tier || 'FREE';
+  
+  if (userTier === 'ALL_VIP') return true;
+  if (market === 'FOREX' && userTier === 'FOREX_VIP') return true;
+  if (market === 'CRYPTO' && userTier === 'CRYPTO_VIP') return true;
+  return false;
+}
+
 function feedCard(s, isAdmin){
-  const isPremUser = isAdmin || (currentMemberDoc && currentMemberDoc.tier === 'PREMIUM');
-  const val = (v) => isPremUser ? v : `<span class="locked-val">${v}</span>`;
+  const market = s.market || 'FOREX';
+  const isUnlocked = hasMarketAccess(market, isAdmin);
+  const val = (v) => isUnlocked ? v : `<span class="locked-val">${v}</span>`;
   
   const e = parseFloat(s.entry), sl = parseFloat(s.sl), tp = parseFloat(s.tp1);
   const rr = calculateRR(e, sl, tp);
-  const market = s.market || 'FOREX';
   const extraTps = [s.tp2, s.tp3].filter(Boolean);
-  const autoLot = isPremUser ? computeLotSize(s) : null;
-  const pnlData = isPremUser ? computePnL(s, autoLot) : null;
+  const autoLot = isUnlocked ? computeLotSize(s) : null;
+  const pnlData = isUnlocked ? computePnL(s, autoLot) : null;
   const status = s.roadmapStatus || 'ENTRY TRIGGERED';
   const code = s.tradeCode || ('#HK-' + s.id.slice(-3).toUpperCase());
 
@@ -638,7 +673,10 @@ function feedCard(s, isAdmin){
         ${s.tp3 ? `<div><span class="k">Target 3</span><span class="v-tp">${val(s.tp3)}</span></div>` : ''}
       </div>` : ''}
 
-      ${!isPremUser ? '<div class="upgrade-note">🔒 Price Levels, Lots & PnL Protected — Upgrade to Premium to Unlock</div>' : ''}
+      ${!isUnlocked ? `
+        <div class="upgrade-note ${market === 'CRYPTO' ? 'crypto' : ''}">
+          🔒 ${market} Access Protected — Upgrade to <b>${market === 'CRYPTO' ? 'CRYPTO VIP' : 'FOREX VIP'}</b> to Unlock
+        </div>` : ''}
 
       ${s.result ? `<div class="result-badge ${s.result}">${s.result}</div>` : ''}
 
@@ -673,14 +711,17 @@ function feedCard(s, isAdmin){
 function renderMemberFeed() {
   const pktMidnight = getPktMidnightTimestamp();
   
-  // Filter out any signals posted before today's 12:00 AM Pakistan Time
-  const todaySignals = signalsCache.filter(s => {
-    if (!s.createdAt) return true;
-    const sTime = s.createdAt.toMillis ? s.createdAt.toMillis() : new Date(s.createdAt).getTime();
-    return sTime >= pktMidnight;
+  // Filter by: 1) PKT Midnight reset, 2) Active Market Tab (FOREX or CRYPTO)
+  const filtered = signalsCache.filter(s => {
+    if (s.createdAt) {
+      const sTime = s.createdAt.toMillis ? s.createdAt.toMillis() : new Date(s.createdAt).getTime();
+      if (sTime < pktMidnight) return false;
+    }
+    const m = s.market || 'FOREX';
+    return m === activeMarketTab;
   });
 
-  const html = todaySignals.length ? todaySignals.map(s => feedCard(s, false)).join('') : '<div class="empty">No active signals deployed today</div>';
+  const html = filtered.length ? filtered.map(s => feedCard(s, false)).join('') : `<div class="empty">No active ${activeMarketTab} setups deployed today</div>`;
   document.getElementById('memberFeed').innerHTML = html;
 }
 
@@ -708,7 +749,7 @@ async function postSignal(){
 
   if(!pair || !entry || !sl || !tp1) return alert('Please specify Pair, Entry, Stop Loss, and Target 1');
 
-  // Random 3-letter code (e.g., #HK-TRB)
+  // Random 3-letter code (e.g. #HK-TRB)
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   let randStr = '';
   for (let i = 0; i < 3; i++) randStr += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -764,23 +805,32 @@ async function deleteSignal(id){
   if(confirm('Permanently delete this setup?')) await db.collection('signals').doc(id).delete();
 }
 
-// --- MEMBERS MANAGEMENT ---
+// --- MEMBERS MANAGEMENT (SEPARATE ACCESS TIERS) ---
 function listenMembers(){
   db.collection('members').orderBy('createdAt','desc').onSnapshot(snap => {
     const members = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
     document.getElementById('membersList').innerHTML = members.map(m => `
       <div class="member-row">
-        <div><b>${m.name || 'Member'}</b> (${m.tier || 'FREE'})</div>
-        ${m.role === 'admin' ? '<span style="color:var(--gold)">ADMIN</span>' : `
-        <button class="tier-toggle ${m.tier === 'PREMIUM' ? 'fr' : 'prem'}" onclick="toggleUserTier('${m.uid}','${m.tier === 'PREMIUM' ? 'FREE' : 'PREMIUM'}')">
-          ${m.tier === 'PREMIUM' ? 'Downgrade to FREE' : 'Upgrade to PREMIUM'}
-        </button>`}
+        <div class="member-row-top">
+          <div><b>${m.name || 'Trader'}</b> <span style="font-size:10px;color:var(--ink-dim);">(${m.email})</span></div>
+          ${m.role === 'admin' ? '<span style="color:var(--gold);font-weight:700;">ADMIN</span>' : ''}
+        </div>
+        ${m.role !== 'admin' ? `
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span style="font-size:11px;color:var(--ink-dim);">Access Plan:</span>
+          <select class="tier-select" onchange="updateMemberTier('${m.uid}', this.value)">
+            <option value="FREE" ${(!m.tier || m.tier === 'FREE') ? 'selected' : ''}>🔒 FREE (All Locked)</option>
+            <option value="FOREX_VIP" ${m.tier === 'FOREX_VIP' ? 'selected' : ''}>📈 FOREX VIP Only</option>
+            <option value="CRYPTO_VIP" ${m.tier === 'CRYPTO_VIP' ? 'selected' : ''}>🪙 CRYPTO VIP Only</option>
+            <option value="ALL_VIP" ${m.tier === 'ALL_VIP' ? 'selected' : ''}>⭐ ALL VIP (Forex + Crypto)</option>
+          </select>
+        </div>` : ''}
       </div>
     `).join('');
   });
 }
 
-async function toggleUserTier(uid, newTier){
+async function updateMemberTier(uid, newTier){
   await db.collection('members').doc(uid).update({ tier: newTier });
 }
 </script>
