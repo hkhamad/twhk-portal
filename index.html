@@ -96,6 +96,13 @@
   .roadmap-badge.tp{border-color:var(--gold-bright);color:var(--gold-bright);background:rgba(232,198,90,0.15);}
   .roadmap-badge.sl{border-color:var(--red);color:var(--red);background:rgba(226,86,79,0.15);}
 
+  /* REALTIME MARKET TICKER BAR */
+  .live-ticker{
+    background:var(--navy-900);border:1px dashed var(--line);border-radius:8px;padding:6px 10px;
+    display:flex;justify-content:space-between;align-items:center;font-size:11px;font-family:monospace;margin-top:6px;
+  }
+  .live-ticker-val{color:var(--gold-bright);font-weight:800;font-size:12px;}
+
   /* R:R VISUAL METER */
   .rr-visual{margin:8px 0;background:var(--navy-900);border-radius:8px;padding:8px;}
   .rr-track{height:6px;width:100%;border-radius:3px;background:#1a283e;display:flex;overflow:hidden;margin-top:5px;}
@@ -109,6 +116,7 @@
   }
   .auto-lot-val{font-size:13px;font-weight:800;color:var(--gold-bright);}
 
+  /* DYNAMIC FLOATING PnL BADGE */
   .pnl-badge{
     background:var(--navy-900);border-radius:8px;padding:8px 10px;margin-top:8px;
     display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;
@@ -370,6 +378,10 @@ let currentMemberDoc = null;
 let signalsCache = [];
 let activeMarketTab = 'FOREX';
 
+// LIVE MARKET PRICE CACHE (Pairs -> current price)
+const livePrices = {};
+let cryptoWs = null;
+
 // --- SESSION RADAR LOGIC ---
 function updateRadar() {
   const now = new Date();
@@ -478,7 +490,7 @@ function computeLotSize(signal) {
   return { label: 'Suggested Lot', val: lot.toFixed(2) + ' lots', rawLot: lot, isCrypto: false, riskDollar };
 }
 
-// --- PnL ESTIMATION ENGINE ---
+// --- REAL-TIME LIVE FLOATING PnL & AUTO TARGET DETECTION ENGINE ---
 function computePnL(signal, autoLot) {
   if (!autoLot || !autoLot.rawLot) return null;
   const status = (signal.roadmapStatus || '').toUpperCase();
@@ -489,32 +501,154 @@ function computePnL(signal, autoLot) {
   const tp2 = parseFloat(signal.tp2) || tp1;
   const tp3 = parseFloat(signal.tp3) || tp2;
 
+  // Static closed results
   if (res === 'LOSS' || status.includes('SL HIT')) {
     return { text: `Loss: -$${autoLot.riskDollar.toFixed(2)}`, type: 'loss' };
   }
   if (res === 'BE' || status.includes('BREAK EVEN')) {
     return { text: `Result: $0.00 (Break-Even Secured)`, type: 'be' };
   }
-
-  const pair = (signal.pair || '').toUpperCase();
-  let multiplier = 100000;
-  if (pair.includes('XAU') || pair.includes('GOLD')) multiplier = 100;
-  if (autoLot.isCrypto) multiplier = 1;
-
   if (status.includes('TP 3') || res === 'WIN') {
-    const pnl = Math.abs(tp3 - entry) * autoLot.rawLot * multiplier;
-    return { text: `Profit: +$${pnl.toFixed(2)} (Full TP Target)`, type: 'win' };
-  }
-  if (status.includes('TP 2')) {
-    const pnl = Math.abs(tp2 - entry) * autoLot.rawLot * multiplier * 0.70;
-    return { text: `Profit: +$${pnl.toFixed(2)} (70% Booked)`, type: 'win' };
-  }
-  if (status.includes('TP 1')) {
-    const pnl = Math.abs(tp1 - entry) * autoLot.rawLot * multiplier * 0.35;
-    return { text: `Profit: +$${pnl.toFixed(2)} (35% Booked)`, type: 'win' };
+    const pnl = Math.abs(tp3 - entry) * autoLot.rawLot * (signal.market === 'CRYPTO' ? 1 : 100);
+    return { text: `Profit: +$${pnl.toFixed(2)} (Full Target)`, type: 'win' };
   }
 
-  return null;
+  // Check if live market price is available
+  const pairKey = (signal.pair || '').replace(/[^A-Z0-9]/g, '').toUpperCase();
+  const currentPrice = livePrices[pairKey] || livePrices[signal.pair.toUpperCase()];
+
+  if (currentPrice) {
+    const dir = (signal.dir || '').toUpperCase();
+    const isLong = dir.includes('BUY') || dir.includes('LONG');
+    const priceDiff = isLong ? (currentPrice - entry) : (entry - currentPrice);
+
+    let multiplier = 100000;
+    if (pairKey.includes('XAU') || pairKey.includes('GOLD')) multiplier = 100;
+    if (signal.market === 'CRYPTO') multiplier = 1;
+
+    const floatingDollar = (priceDiff * autoLot.rawLot * multiplier).toFixed(2);
+    const isProfit = parseFloat(floatingDollar) >= 0;
+
+    return {
+      text: `${isProfit ? 'Profit' : 'Floating'}: ${isProfit ? '+' : ''}$${floatingDollar}`,
+      type: isProfit ? 'win' : 'loss'
+    };
+  }
+
+  // Fallback if price feed still connecting
+  if (status.includes('TP 2')) return { text: `Profit: 70% Volume Secured`, type: 'win' };
+  if (status.includes('TP 1')) return { text: `Profit: 35% Volume Secured`, type: 'win' };
+  return { text: `Scanning Market...`, type: 'be' };
+}
+
+// --- FREE REAL-TIME PRICE STREAMING ENGINE ---
+function subscribeToMarketFeeds() {
+  // 1. Connect Crypto pairs via Official Binance WebSocket
+  const cryptoPairs = signalsCache
+    .filter(s => s.market === 'CRYPTO' && !s.result)
+    .map(s => s.pair.toLowerCase().replace(/[^a-z0-9]/g, ''))
+    .filter(Boolean);
+
+  if (cryptoPairs.length) {
+    if (cryptoWs) cryptoWs.close();
+    const streams = cryptoPairs.map(p => `${p}@ticker`).join('/');
+    cryptoWs = new WebSocket(`wss://stream.binance.com:9443/ws/${streams}`);
+
+    cryptoWs.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data && data.s && data.c) {
+        livePrices[data.s.toUpperCase()] = parseFloat(data.c);
+        checkAutoTargets();
+        updateTickerDOM(data.s.toUpperCase(), parseFloat(data.c));
+      }
+    };
+  }
+
+  // 2. Poll Gold & Forex rates periodically (Free live rate poller)
+  pollForexGoldRates();
+}
+
+async function pollForexGoldRates() {
+  try {
+    // Free live gold proxy rate check
+    const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT');
+    const data = await res.json();
+    if (data && data.price) {
+      const goldPrice = parseFloat(data.price);
+      livePrices['XAUUSD'] = goldPrice;
+      livePrices['GOLD'] = goldPrice;
+      checkAutoTargets();
+      updateTickerDOM('XAUUSD', goldPrice);
+    }
+  } catch (e) {
+    // Silent failover
+  }
+}
+setInterval(pollForexGoldRates, 2500);
+
+function updateTickerDOM(pair, price) {
+  const el = document.getElementById(`live-price-${pair}`);
+  if (el) el.textContent = price.toFixed(2);
+}
+
+// AUTOMATIC LEVEL TRIGGER & BREAK-EVEN LOGIC
+async function checkAutoTargets() {
+  if (!currentMemberDoc || currentMemberDoc.role !== 'admin') return;
+
+  for (const s of signalsCache) {
+    if (s.result) continue; // Skip finished trades
+
+    const pairKey = (s.pair || '').replace(/[^A-Z0-9]/g, '').toUpperCase();
+    const cur = livePrices[pairKey] || livePrices[s.pair.toUpperCase()];
+    if (!cur) continue;
+
+    const dir = (s.dir || '').toUpperCase();
+    const isLong = dir.includes('BUY') || dir.includes('LONG');
+    const sl = parseFloat(s.sl);
+    const tp1 = parseFloat(s.tp1);
+    const tp2 = s.tp2 ? parseFloat(s.tp2) : null;
+    const tp3 = s.tp3 ? parseFloat(s.tp3) : null;
+
+    // Check Auto Stop-Loss Hit
+    if ((isLong && cur <= sl) || (!isLong && cur >= sl)) {
+      await db.collection('signals').doc(s.id).update({
+        roadmapStatus: 'SL HIT',
+        result: 'LOSS'
+      });
+      continue;
+    }
+
+    // Check Auto TP 3
+    if (tp3 && ((isLong && cur >= tp3) || (!isLong && cur <= tp3))) {
+      if (s.roadmapStatus !== 'TP 3 DONE 30% BOOKED') {
+        await db.collection('signals').doc(s.id).update({
+          roadmapStatus: 'TP 3 DONE 30% BOOKED',
+          result: 'WIN'
+        });
+      }
+      continue;
+    }
+
+    // Check Auto TP 2
+    if (tp2 && ((isLong && cur >= tp2) || (!isLong && cur <= tp2))) {
+      if (!s.roadmapStatus.includes('TP 2') && !s.roadmapStatus.includes('TP 3')) {
+        await db.collection('signals').doc(s.id).update({
+          roadmapStatus: 'TP 2 DONE 35% BOOKED'
+        });
+      }
+      continue;
+    }
+
+    // Check Auto TP 1 & Auto Break-Even
+    if ((isLong && cur >= tp1) || (!isLong && cur <= tp1)) {
+      if (s.roadmapStatus === 'ENTRY TRIGGERED') {
+        await db.collection('signals').doc(s.id).update({
+          roadmapStatus: 'TP 1 DONE 35% BOOKED',
+          sl: s.entry // Auto Shift SL to Break-Even
+        });
+      }
+    }
+  }
 }
 
 // --- AUTHENTICATION ---
@@ -622,6 +756,9 @@ function feedCard(s, isAdmin){
   const status = s.roadmapStatus || 'ENTRY TRIGGERED';
   const code = s.tradeCode || ('#HK-' + s.id.slice(-3).toUpperCase());
 
+  const cleanPair = (s.pair || '').replace(/[^A-Z0-9]/g, '').toUpperCase();
+  const currentLivePrice = livePrices[cleanPair] || livePrices[s.pair.toUpperCase()] || '---';
+
   let statusClass = '';
   if(status.includes('BREAK EVEN')) statusClass = 'be';
   if(status.includes('DONE')) statusClass = 'tp';
@@ -640,6 +777,12 @@ function feedCard(s, isAdmin){
       <div class="roadmap-badge ${statusClass}">
         <span>📍 <b>Status:</b> ${status}</span>
         <span style="font-size:10px;opacity:0.8">${code}</span>
+      </div>
+
+      <!-- LIVE REALTIME MARKET TICKER -->
+      <div class="live-ticker">
+        <span>⚡ Real-Time Price:</span>
+        <span class="live-ticker-val" id="live-price-${cleanPair}">${typeof currentLivePrice === 'number' ? currentLivePrice.toFixed(2) : currentLivePrice}</span>
       </div>
 
       <div class="rr-visual">
@@ -661,7 +804,7 @@ function feedCard(s, isAdmin){
 
       ${pnlData ? `
       <div class="pnl-badge ${pnlData.type}">
-        <span>📊 <b>Estimated PnL:</b></span>
+        <span>📊 <b>Real-Time PnL:</b></span>
         <span>${pnlData.text}</span>
       </div>` : ''}
 
@@ -710,7 +853,7 @@ function feedCard(s, isAdmin){
     </div>`;
 }
 
-// BUILD BLURRED TEASER CARD FOR SNAPSHOT (MATCHES YOUR EXACT SCREENSHOT)
+// BUILD BLURRED TEASER CARD FOR SNAPSHOT
 function buildTeaserCardHTML(s) {
   const market = s.market || 'FOREX';
   const e = parseFloat(s.entry), sl = parseFloat(s.sl), tp = parseFloat(s.tp1);
@@ -778,13 +921,14 @@ function listenSignals(){
     .onSnapshot(snap => {
       signalsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       renderMemberFeed();
+      subscribeToMarketFeeds();
       if(currentMemberDoc && currentMemberDoc.role === 'admin'){
         document.getElementById('adminFeed').innerHTML = signalsCache.map(s => feedCard(s, true)).join('');
       }
     });
 }
 
-// POST SIGNAL: AUTO GENERATE IMAGE & SHARE DIRECTLY TO WHATSAPP
+// POST SIGNAL: AUTO GENERATE IMAGE & SHARE DIRECTLY
 async function postSignal(){
   const pair = document.getElementById('a-pair').value.trim().toUpperCase();
   const market = document.getElementById('a-market').value;
@@ -801,7 +945,6 @@ async function postSignal(){
   btn.disabled = true;
   btn.textContent = 'Generating Photo...';
 
-  // 3-letter randomized tracking code (e.g. #HK-AKR)
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   let randStr = '';
   for (let i = 0; i < 3; i++) randStr += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -820,7 +963,6 @@ async function postSignal(){
 
   await db.collection('signals').add(signalObj);
 
-  // Clear form inputs
   document.getElementById('a-pair').value = '';
   document.getElementById('a-entry').value = '';
   document.getElementById('a-sl').value = '';
@@ -828,7 +970,6 @@ async function postSignal(){
   document.getElementById('a-tp2').value = '';
   document.getElementById('a-tp3').value = '';
 
-  // Render teaser card offscreen for screenshot
   const captureBox = document.getElementById('snapshotContainer');
   captureBox.innerHTML = buildTeaserCardHTML({ ...signalObj, id: 'temp' });
 
@@ -843,7 +984,6 @@ async function postSignal(){
       const fileName = `${pair}_${tradeCode}.png`;
       const file = new File([blob], fileName, { type: 'image/png' });
 
-      // Direct Image File Share via Mobile OS
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({
@@ -854,7 +994,6 @@ async function postSignal(){
           console.log('Share dismissed');
         }
       } else {
-        // Fallback agar browser file share support na kare: Auto save to Gallery
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = fileName;
@@ -885,9 +1024,7 @@ async function updateAndAlert(id, status){
   if(!s) return;
   const code = s.tradeCode || ('#HK-' + s.id.slice(-3).toUpperCase());
 
-  // Format: XAUUSD : TP 1 DONE 35% BOOKED (#HK-AKR)
   const msg = `${s.pair} : ${status} (${code})`;
-
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
 
