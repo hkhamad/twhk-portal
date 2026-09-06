@@ -39,7 +39,7 @@
   
   .theme-btn, .settings-btn{
     background:var(--navy-900);border:1px solid var(--line);color:var(--gold-bright);
-    width:36px;height:36px;border-radius:10px;font-size:16px;display:flex;align-items:center;justify-content:center;
+    height:34px;padding:0 10px;border-radius:8px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;
     cursor:pointer;
   }
 
@@ -189,8 +189,8 @@
     box-shadow:0 12px 36px rgba(0,0,0,0.6);
   }
   .settings-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:10px;}
-  .settings-head h3{margin:0;font-size:15px;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;}
-  .close-btn{background:none;border:none;color:var(--ink-dim);font-size:20px;cursor:pointer;line-height:1;}
+  .settings-head h3{margin:0;font-size:13px;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;}
+  .close-btn{background:none;border:none;color:var(--ink-dim);font-size:16px;cursor:pointer;line-height:1;}
   .settings-section{margin-bottom:16px;}
   .settings-section label{font-size:11px;color:var(--ink-dim);text-transform:uppercase;display:block;margin-bottom:4px;font-weight:700;}
   .user-badge{background:var(--sub-bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
@@ -215,8 +215,8 @@
     </div>
     <div class="header-actions">
       <span class="status-dot" title="Live Feed Active"></span>
-      <button class="theme-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Light/Dark Mode">🌓</button>
-      <button class="settings-btn" id="openSettingsBtn" onclick="toggleSettings(true)" title="Settings">⚙️</button>
+      <button class="theme-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Theme">Theme</button>
+      <button class="settings-btn" id="openSettingsBtn" onclick="toggleSettings(true)" title="Settings">Settings</button>
     </div>
   </header>
 
@@ -239,10 +239,10 @@
     <div id="memberView">
       <div class="market-tabs">
         <button id="tab-forex" class="market-tab-btn active forex" onclick="switchMarketTab('FOREX')">
-          📈 Forex & Indices
+          Forex & Indices
         </button>
         <button id="tab-crypto" class="market-tab-btn crypto" onclick="switchMarketTab('CRYPTO')">
-          🪙 Crypto Futures
+          Crypto Futures
         </button>
       </div>
 
@@ -273,7 +273,7 @@
           </select>
           <div class="entry-box-wrapper">
             <input id="a-entry" placeholder="Entry Level (or empty for NOW)">
-            <button type="button" class="now-tag-btn" onclick="fillMarketNow()">⚡ NOW</button>
+            <button type="button" class="now-tag-btn" onclick="fillMarketNow()">NOW</button>
           </div>
         </div>
         <div class="grid2">
@@ -305,7 +305,7 @@
 <div class="modal-overlay" id="settingsModal">
   <div class="settings-card">
     <div class="settings-head">
-      <h3>⚙️ Portal Settings</h3>
+      <h3>Portal Settings</h3>
       <button class="close-btn" onclick="toggleSettings(false)">✕</button>
     </div>
 
@@ -318,7 +318,7 @@
     </div>
 
     <div class="settings-section">
-      <label>🛡️ Risk & Auto-Lot Management</label>
+      <label>Risk & Auto-Lot Management</label>
       <div class="grid2">
         <div>
           <span style="font-size:10px;color:var(--ink-dim);">Account Balance ($)</span>
@@ -337,9 +337,9 @@
     <div class="settings-section">
       <label>Preferences</label>
       <div style="font-size:12px;color:var(--ink-dim);background:var(--sub-bg);padding:8px 10px;border-radius:8px;border:1px solid var(--line);">
-        Timezone Reference: <b>UTC-4 EST (New York)</b><br>
+        Timezone: <b>UTC-4 EST (New York)</b><br>
         Daily Reset: <b>12:00 AM Pakistan Time (PKT)</b><br>
-        Feed Engine: <b>Binance Spot / Forex.com Interbank Real-Rate</b>
+        Feed: <b>Binance Spot / Forex.com Interbank</b>
       </div>
     </div>
 
@@ -391,16 +391,16 @@ function initTheme() {
   const saved = localStorage.getItem('hk_theme');
   if (saved === 'light') {
     document.body.classList.add('light-theme');
-    document.getElementById('themeToggleBtn').textContent = '☀️';
+    document.getElementById('themeToggleBtn').textContent = 'Dark';
   } else {
     document.body.classList.remove('light-theme');
-    document.getElementById('themeToggleBtn').textContent = '🌙';
+    document.getElementById('themeToggleBtn').textContent = 'Light';
   }
 }
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light-theme');
   localStorage.setItem('hk_theme', isLight ? 'light' : 'dark');
-  document.getElementById('themeToggleBtn').textContent = isLight ? '☀️' : '🌙';
+  document.getElementById('themeToggleBtn').textContent = isLight ? 'Dark' : 'Light';
 }
 initTheme();
 
@@ -1035,17 +1035,17 @@ function feedCard(s, isAdmin){
       </div>
 
       <div class="roadmap-badge ${statusClass}">
-        <span>📍 <b>Status:</b> ${status}</span>
+        <span>Status: <b>${status}</b></span>
         <span style="font-size:10px;opacity:0.8">${code}</span>
       </div>
 
       <div class="metrics-grid">
         <div class="metric-tile">
-          <span class="metric-k">⚡ Real-Time Price</span>
+          <span class="metric-k">Real-Time Price</span>
           <span class="metric-v-price" data-ticker-pair="${cleanPair}">${typeof currentLivePrice === 'number' ? formatPrice(currentLivePrice) : currentLivePrice}</span>
         </div>
         <div class="metric-tile">
-          <span class="metric-k">📊 Real-Time PnL</span>
+          <span class="metric-k">Real-Time PnL</span>
           <span id="pnl-container-${s.id}" class="metric-v-pnl ${pnlData ? pnlData.type : 'be'}">
             ${pnlData ? pnlData.text : 'Calculating...'}
           </span>
@@ -1077,12 +1077,12 @@ function feedCard(s, isAdmin){
 
       ${!isUnlocked ? `
         <div class="upgrade-note ${market === 'CRYPTO' ? 'crypto' : ''}">
-          🔒 ${market} Access Protected — Upgrade to Premium
+          ${market} Access Protected — Upgrade to Premium
         </div>` : ''}
 
       <div class="card-footer-info">
         <span>${autoLot ? `${autoLot.label}: <b class="auto-lot-text">${autoLot.val}</b>` : 'Trading Terminal'}</span>
-        <span>📅 ${dateFormatted || 'Just Now'}</span>
+        <span>${dateFormatted || 'Just Now'}</span>
       </div>
 
       ${s.result ? `<div class="result-badge ${s.result}">${s.result}</div>` : ''}
@@ -1090,29 +1090,29 @@ function feedCard(s, isAdmin){
       ${isAdmin ? `
       <div class="roadmap-box-card">
         <button class="roadmap-toggle-btn" onclick="toggleRoadmapBox('${s.id}')">
-          <span>⚡ Roadmap Controls & Instant Alerts</span>
-          <span style="font-size:10px;">▼</span>
+          <span>Roadmap Controls & Alerts</span>
+          <span style="font-size:10px;">Options</span>
         </button>
         <div id="roadmap-panel-${s.id}" class="roadmap-body hidden">
           <div class="roadmap-btns">
-            <button onclick="updateAndAlert('${s.id}', 'ENTRY TRIGGERED')">⚡ Force Entry Triggered</button>
-            <button onclick="updateAndAlert('${s.id}', 'TP 1 DONE 35% BOOKED')">💰 TP 1 Done 35% Booked</button>
-            <button onclick="updateAndAlert('${s.id}', 'TP 2 DONE 35% BOOKED')">💰 TP 2 Done 35% Booked</button>
-            <button onclick="updateAndAlert('${s.id}', 'TP 3 DONE 30% BOOKED')">💰 TP 3 Done 30% Booked</button>
-            <button onclick="updateAndAlert('${s.id}', 'BREAK EVEN DONE')">🛡️ Break Even Done</button>
-            <button onclick="updateAndAlert('${s.id}', 'SL HIT')" style="border-color:var(--red);color:var(--red);">🛑 SL Hit</button>
+            <button onclick="updateAndAlert('${s.id}', 'ENTRY TRIGGERED')">Force Entry Triggered</button>
+            <button onclick="updateAndAlert('${s.id}', 'TP 1 DONE 35% BOOKED')">TP 1 Done 35% Booked</button>
+            <button onclick="updateAndAlert('${s.id}', 'TP 2 DONE 35% BOOKED')">TP 2 Done 35% Booked</button>
+            <button onclick="updateAndAlert('${s.id}', 'TP 3 DONE 30% BOOKED')">TP 3 Done 30% Booked</button>
+            <button onclick="updateAndAlert('${s.id}', 'BREAK EVEN DONE')">Break Even Done</button>
+            <button onclick="updateAndAlert('${s.id}', 'SL HIT')" style="border-color:var(--red);color:var(--red);">SL Hit</button>
           </div>
         </div>
       </div>` : ''}
 
       <div class="chat-box-card">
         <button class="chat-toggle-btn" onclick="toggleChatBox('${s.id}')">
-          <span>💬 Trade Discussion & Updates</span>
-          <span style="font-size:10px;">▼</span>
+          <span>Trade Discussion & Updates</span>
+          <span style="font-size:10px;">Chat</span>
         </button>
         <div id="chat-panel-${s.id}" class="chat-panel hidden">
           <div id="chat-msgs-${s.id}" class="chat-messages">
-            <div style="color:var(--ink-dim);font-size:11px;text-align:center;padding:8px 0;">Loading messages...</div>
+            <div style="color:var(--ink-dim);font-size:11px;text-align:center;padding:8px 0;">No comments yet. Start the discussion.</div>
           </div>
           <div class="chat-input-row">
             <input type="text" id="chat-input-${s.id}" placeholder="Write update / question..." onkeydown="if(event.key==='Enter') sendComment('${s.id}')">
@@ -1151,7 +1151,7 @@ function buildTeaserCardHTML(s) {
       </div>
 
       <div class="roadmap-badge" style="margin:8px 0;">
-        <span>📍 Status: ${s.roadmapStatus || 'ENTRY TRIGGERED'}</span>
+        <span>Status: ${s.roadmapStatus || 'ENTRY TRIGGERED'}</span>
         <span style="font-size:10px;opacity:0.8">${code}</span>
       </div>
 
@@ -1173,12 +1173,12 @@ function buildTeaserCardHTML(s) {
       </div>
 
       <div class="upgrade-note ${market === 'CRYPTO' ? 'crypto' : ''}" style="margin-top:8px;padding:10px;">
-        🔒 ${market} Access Protected — Upgrade to Premium
+        ${market} Access Protected — Upgrade to Premium
       </div>
 
       <div class="card-footer-info" style="margin-top:8px;">
         <span style="color:#8fa0b8;">TW-HK Signals</span>
-        <span style="color:#8fa0b8;">📅 ${dateFormatted}</span>
+        <span style="color:#8fa0b8;">${dateFormatted}</span>
       </div>
     </div>`;
 }
@@ -1363,10 +1363,10 @@ function listenMembers(){
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
           <span style="font-size:11px;color:var(--ink-dim);">Access Plan:</span>
           <select class="tier-select" onchange="updateMemberTier('${m.uid}', this.value)">
-            <option value="FREE" ${(!m.tier || m.tier === 'FREE') ? 'selected' : ''}>🔒 FREE (All Locked)</option>
-            <option value="FOREX_VIP" ${m.tier === 'FOREX_VIP' ? 'selected' : ''}>📈 FOREX VIP Only</option>
-            <option value="CRYPTO_VIP" ${m.tier === 'CRYPTO_VIP' ? 'selected' : ''}>🪙 CRYPTO VIP Only</option>
-            <option value="ALL_VIP" ${m.tier === 'ALL_VIP' ? 'selected' : ''}>⭐ ALL VIP (Forex + Crypto)</option>
+            <option value="FREE" ${(!m.tier || m.tier === 'FREE') ? 'selected' : ''}>FREE (All Locked)</option>
+            <option value="FOREX_VIP" ${m.tier === 'FOREX_VIP' ? 'selected' : ''}>FOREX VIP Only</option>
+            <option value="CRYPTO_VIP" ${m.tier === 'CRYPTO_VIP' ? 'selected' : ''}>CRYPTO VIP Only</option>
+            <option value="ALL_VIP" ${m.tier === 'ALL_VIP' ? 'selected' : ''}>ALL VIP (Forex + Crypto)</option>
           </select>
         </div>` : ''}
       </div>
