@@ -129,13 +129,6 @@
   }
   .upgrade-note.crypto{color:#8d5cc9;background:rgba(155,107,217,.1);border-color:var(--purple);}
 
-  /* ONE-CLICK EXECUTION BUTTON */
-  .btn-execute-order{
-    width:100%;padding:10px;border-radius:8px;border:none;background:var(--green);color:#070c14;
-    font-size:12px;font-weight:800;cursor:pointer;margin-bottom:8px;letter-spacing:0.5px;
-  }
-  .btn-execute-order:active{opacity:0.8;}
-
   .card-footer-info{
     display:flex;justify-content:space-between;align-items:center;padding:6px 0 0;
     border-top:1px dashed var(--line);font-size:10px;color:var(--ink-dim);margin-top:4px;
@@ -223,7 +216,7 @@
 
   #snapshotContainer{
     position:fixed;left:-9999px;top:-9999px;width:420px;
-    background:#070c14;padding:16px;border-radius:16px;
+    padding:16px;border-radius:16px;
   }
 </style>
 </head>
@@ -361,15 +354,6 @@
       <div class="stat-net-banner">
         <span>Net Today Result</span>
         <span id="statTodayNet" class="stat-card-val neutral">$0.00</span>
-      </div>
-    </div>
-
-    <div class="settings-section">
-      <label>Exchange Execution Webhook (Optional)</label>
-      <input id="settWebhookUrl" placeholder="Webhook URL (e.g. TradingView / Alertatron / Private Bridge)" oninput="saveApiSettings()">
-      <input id="settSecretKey" placeholder="Passphrase / Secret Key" type="password" oninput="saveApiSettings()">
-      <div style="font-size:10px;color:var(--ink-dim);margin-top:-4px;">
-        Configuring this bridge allows 1-Click execution on your connected terminal.
       </div>
     </div>
 
@@ -595,13 +579,6 @@ function saveRiskSettings(){
 
   renderMemberFeed();
   updateSettingsPerformanceStats();
-}
-
-function saveApiSettings(){
-  const url = document.getElementById('settWebhookUrl').value.trim();
-  const sec = document.getElementById('settSecretKey').value.trim();
-  localStorage.setItem('hk_webhook_url', url);
-  localStorage.setItem('hk_webhook_sec', sec);
 }
 
 function normalizePair(pair, market) {
@@ -987,53 +964,6 @@ async function checkAutoTargets() {
   }
 }
 
-// 1-CLICK ORDER EXECUTION HANDLER
-async function executeOrderDirect(signalId) {
-  const s = signalsCache.find(x => x.id === signalId);
-  if (!s) return;
-
-  const market = resolveMarket(s);
-  const autoLot = computeLotSize(s);
-  const cleanPair = normalizePair(s.pair, market);
-  const webhookUrl = localStorage.getItem('hk_webhook_url');
-  const secretKey = localStorage.getItem('hk_webhook_sec');
-
-  const payload = {
-    symbol: cleanPair,
-    market: market,
-    action: (s.dir || '').toUpperCase(),
-    orderType: (s.dir || '').includes('LIMIT') ? 'LIMIT' : 'MARKET',
-    entryPrice: parseFloat(s.entry),
-    stopLoss: parseFloat(s.sl),
-    takeProfit: parseFloat(s.tp1),
-    lotOrUnits: autoLot ? autoLot.val : 'Default',
-    tradeCode: s.tradeCode,
-    secret: secretKey || ''
-  };
-
-  if (webhookUrl) {
-    try {
-      await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      alert(`Order transmitted to execution gateway for ${cleanPair}`);
-    } catch(e) {
-      alert(`Transmission failed: ${e.message}`);
-    }
-  } else {
-    // Fallback: Copy exact formatted execution parameters to clipboard
-    const info = `Asset: ${cleanPair}\nSide: ${payload.action}\nType: ${payload.orderType}\nSize: ${payload.lotOrUnits}\nEntry: ${payload.entryPrice}\nSL: ${payload.stopLoss}\nTP: ${payload.takeProfit}`;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(info);
-      alert(`Execution details copied to clipboard:\n\n${info}\n\nPaste into your terminal/app.`);
-    } else {
-      alert(`Order Parameters:\n\n${info}`);
-    }
-  }
-}
-
 function toggleRoadmapBox(signalId) {
   const panel = document.getElementById(`roadmap-panel-${signalId}`);
   if (panel) panel.classList.toggle('hidden');
@@ -1052,7 +982,7 @@ function toggleChatBox(signalId) {
         const box = document.getElementById(`chat-msgs-${signalId}`);
         if (!box) return;
         if (snap.empty) {
-          box.innerHTML = '<div style="color:var(--ink-dim);font-size:11px;text-align:center;padding:8px 0;">No comments yet. Start the discussion.</div>';
+          box.innerHTML = '<div style="color:var(--ink-dim);font-size:11px;text-align:center;padding:8px 0;">No comments yet. Start the discussion!</div>';
           return;
         }
         box.innerHTML = snap.docs.map(d => {
@@ -1149,11 +1079,6 @@ auth.onAuthStateChanged(async (user) => {
     if(savedBal) document.getElementById('settBalance').value = savedBal;
     if(savedRiskAmt) document.getElementById('settRiskAmount').value = savedRiskAmt;
     
-    const savedWh = localStorage.getItem('hk_webhook_url');
-    const savedSec = localStorage.getItem('hk_webhook_sec');
-    if(savedWh) document.getElementById('settWebhookUrl').value = savedWh;
-    if(savedSec) document.getElementById('settSecretKey').value = savedSec;
-
     saveRiskSettings();
 
     listenSignals();
@@ -1272,13 +1197,6 @@ function feedCard(s, isAdmin){
           ${market} Access Protected — Upgrade to Premium
         </div>` : ''}
 
-      <!-- 1-CLICK DIRECT ORDER EXECUTION BUTTON -->
-      ${isUnlocked && !s.result ? `
-        <button class="btn-execute-order" onclick="executeOrderDirect('${s.id}')">
-          Execute Order (${autoLot ? autoLot.val : 'Auto Size'})
-        </button>
-      ` : ''}
-
       <div class="card-footer-info">
         <span>${autoLot ? `${autoLot.label}: <b class="auto-lot-text">${autoLot.val}</b>` : 'Trading Terminal'}</span>
         <span>${dateFormatted || 'Just Now'}</span>
@@ -1339,45 +1257,52 @@ function buildTeaserCardHTML(s) {
   const code = s.tradeCode;
   const dateFormatted = formatPktDateTime(new Date());
 
+  // Dynamic Theme Check for Snapshot Image
+  const isLight = document.body.classList.contains('light-theme');
+  const snapBg = isLight ? '#ffffff' : '#070c14';
+  const snapText = isLight ? '#0f172a' : '#fff';
+  const snapSubBg = isLight ? '#f1f5f9' : '#101c2c';
+  const snapLine = isLight ? '#cbd5e1' : '#22314a';
+
   return `
-    <div class="feed-item market-${market}" style="background:#070c14;border:1px solid #22314a;border-radius:16px;padding:16px;">
+    <div class="feed-item market-${market}" style="background:${snapBg};color:${snapText};border:1px solid ${snapLine};border-radius:16px;padding:16px;">
       <div class="feed-top">
-        <div class="feed-pair" style="font-size:20px;color:#fff;">${s.pair} <span class="market-badge ${market}">${market}</span></div>
+        <div class="feed-pair" style="font-size:20px;color:${snapText};">${s.pair} <span class="market-badge ${market}">${market}</span></div>
         <div style="display:flex;align-items:center;gap:6px;">
-          <span class="trade-code">${code}</span>
+          <span class="trade-code" style="background:${snapSubBg};border:1px solid ${snapLine};">${code}</span>
           <span class="feed-dir ${s.dir}">${s.dir}</span>
         </div>
       </div>
 
-      <div class="roadmap-badge" style="margin:8px 0;">
+      <div class="roadmap-badge" style="margin:8px 0;background:${snapSubBg};border:1px solid ${snapLine};color:${snapText};">
         <span>Status: ${s.roadmapStatus || 'ENTRY TRIGGERED'}</span>
         <span style="font-size:10px;opacity:0.8">${code}</span>
       </div>
 
-      <div class="rr-visual" style="margin:8px 0;background:#101c2c;">
+      <div class="rr-visual" style="margin:8px 0;background:${snapSubBg};border:1px solid ${snapLine};">
         <div class="rr-meta">
           <span style="color:var(--red)">Risk: 1.0</span>
           <span style="color:var(--green)">Target R:R ${rr.ratio}</span>
         </div>
-        <div class="rr-track" style="margin-top:4px;background:#22314a;">
+        <div class="rr-track" style="margin-top:4px;background:${snapLine};">
           <div class="rr-risk" style="width:${rr.riskPct}%"></div>
           <div class="rr-reward" style="width:${rr.rewardPct}%"></div>
         </div>
       </div>
 
       <div class="feed-levels" style="margin-top:8px;">
-        <div style="background:#101c2c;"><span class="k">Entry</span><span class="v-entry" style="filter:blur(6px);opacity:0.7;">000.00</span></div>
-        <div style="background:#101c2c;"><span class="k">Stop Loss</span><span class="v-sl" style="filter:blur(6px);opacity:0.7;">000.00</span></div>
-        <div style="background:#101c2c;"><span class="k">Target 1</span><span class="v-tp" style="filter:blur(6px);opacity:0.7;">000.00</span></div>
+        <div style="background:${snapSubBg};border:1px solid ${snapLine};"><span class="k" style="color:var(--ink-dim);">Entry</span><span class="v-entry" style="filter:blur(6px);opacity:0.7;">000.00</span></div>
+        <div style="background:${snapSubBg};border:1px solid ${snapLine};"><span class="k" style="color:var(--ink-dim);">Stop Loss</span><span class="v-sl" style="filter:blur(6px);opacity:0.7;">000.00</span></div>
+        <div style="background:${snapSubBg};border:1px solid ${snapLine};"><span class="k" style="color:var(--ink-dim);">Target 1</span><span class="v-tp" style="filter:blur(6px);opacity:0.7;">000.00</span></div>
       </div>
 
       <div class="upgrade-note ${market === 'CRYPTO' ? 'crypto' : ''}" style="margin-top:8px;padding:10px;">
         ${market} Access Protected — Upgrade to Premium
       </div>
 
-      <div class="card-footer-info" style="margin-top:8px;">
-        <span style="color:#8fa0b8;">TW-HK Signals</span>
-        <span style="color:#8fa0b8;">${dateFormatted}</span>
+      <div class="card-footer-info" style="margin-top:8px;border-top:1px dashed ${snapLine};">
+        <span style="color:var(--ink-dim);">TW-HK Signals</span>
+        <span style="color:var(--ink-dim);">${dateFormatted}</span>
       </div>
     </div>`;
 }
@@ -1495,8 +1420,9 @@ async function postSignal(){
     captureBox.innerHTML = buildTeaserCardHTML({ ...signalObj, id: 'temp' });
 
     if (window.html2canvas) {
+      const isLight = document.body.classList.contains('light-theme');
       const canvas = await html2canvas(captureBox, {
-        backgroundColor: '#070c14',
+        backgroundColor: isLight ? '#f4f6fa' : '#070c14',
         scale: 2,
         useCORS: true
       });
