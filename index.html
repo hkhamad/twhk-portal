@@ -282,7 +282,7 @@
           <input id="a-tp2" placeholder="Take Profit 2 (Optional)" type="number" step="any">
           <input id="a-tp3" placeholder="Take Profit 3 (Optional)" type="number" step="any">
         </div>
-        <button class="btn" id="btnPublish" onclick="postSignal()">Publish Signal & Auto-Share Photo</button>
+        <button class="btn" id="btnPublish" onclick="postSignal()">Publish Signal</button>
       </div>
 
       <div class="panel">
@@ -784,7 +784,7 @@ function listenSignals(){
     });
 }
 
-// POST SIGNAL & AUTO GENERATE + SHARE BLURRED PHOTO
+// POST SIGNAL: AUTO GENERATE IMAGE & SHARE DIRECTLY TO WHATSAPP
 async function postSignal(){
   const pair = document.getElementById('a-pair').value.trim().toUpperCase();
   const market = document.getElementById('a-market').value;
@@ -799,9 +799,9 @@ async function postSignal(){
 
   const btn = document.getElementById('btnPublish');
   btn.disabled = true;
-  btn.textContent = 'Generating Photo & Publishing...';
+  btn.textContent = 'Generating Photo...';
 
-  // Random 3-letter code (e.g. #HK-AKR)
+  // 3-letter randomized tracking code (e.g. #HK-AKR)
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   let randStr = '';
   for (let i = 0; i < 3; i++) randStr += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -820,7 +820,7 @@ async function postSignal(){
 
   await db.collection('signals').add(signalObj);
 
-  // Clear Form
+  // Clear form inputs
   document.getElementById('a-pair').value = '';
   document.getElementById('a-entry').value = '';
   document.getElementById('a-sl').value = '';
@@ -828,7 +828,7 @@ async function postSignal(){
   document.getElementById('a-tp2').value = '';
   document.getElementById('a-tp3').value = '';
 
-  // RENDER BLURRED CARD OFFSCREEN FOR SNAPSHOT
+  // Render teaser card offscreen for screenshot
   const captureBox = document.getElementById('snapshotContainer');
   captureBox.innerHTML = buildTeaserCardHTML({ ...signalObj, id: 'temp' });
 
@@ -840,41 +840,36 @@ async function postSignal(){
     });
 
     canvas.toBlob(async (blob) => {
-      const fileName = `${pair}_Trade_Alert_${tradeCode}.png`;
+      const fileName = `${pair}_${tradeCode}.png`;
       const file = new File([blob], fileName, { type: 'image/png' });
-      const shareText = `🔔 TW-HK Trade Alert (${tradeCode})\n\nA new trade has been posted. Open the app to view details.\n👉 https://hkhamad.github.io/twhk-portal/`;
 
-      // 1. If device supports direct file sharing (Mobile Chrome/Safari)
+      // Direct Image File Share via Mobile OS
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({
             files: [file],
-            title: `Trade Alert ${tradeCode}`,
-            text: shareText
+            title: `Trade Alert ${tradeCode}`
           });
-        } catch(err){
+        } catch (err) {
           console.log('Share dismissed');
         }
       } else {
-        // 2. Fallback: Auto download image and open WhatsApp
+        // Fallback agar browser file share support na kare: Auto save to Gallery
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = fileName;
         a.click();
-        
-        window.open('https://wa.me/?text=' + encodeURIComponent(shareText), '_blank');
+        window.open('whatsapp://', '_blank');
       }
 
       btn.disabled = false;
-      btn.textContent = 'Publish Signal & Auto-Share Photo';
+      btn.textContent = 'Publish Signal';
     }, 'image/png');
 
   } catch(e) {
     console.error(e);
     btn.disabled = false;
-    btn.textContent = 'Publish Signal & Auto-Share Photo';
-    const fallbackText = `🔔 TW-HK Trade Alert (${tradeCode})\n\nA new trade has been posted. Open the app to view details.\n👉 https://hkhamad.github.io/twhk-portal/`;
-    window.open('https://wa.me/?text=' + encodeURIComponent(fallbackText), '_blank');
+    btn.textContent = 'Publish Signal';
   }
 }
 
