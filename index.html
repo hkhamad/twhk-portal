@@ -28,7 +28,7 @@
   body{margin:0;background:var(--navy-950);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;padding:14px 12px 60px;transition:background 0.25s ease, color 0.25s ease;}
   .wrap{max-width:500px;margin:0 auto;}
   
-  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 4px;}
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding:0 4px;}
   .brand-group{text-align:left;}
   .brand{font-family:Georgia,'Times New Roman',serif;font-size:24px;letter-spacing:1px;color:var(--gold-bright);font-weight:700;}
   .brand span{color:var(--ink);}
@@ -42,24 +42,6 @@
     width:36px;height:36px;border-radius:10px;font-size:16px;display:flex;align-items:center;justify-content:center;
     cursor:pointer;
   }
-
-  .radar-card{
-    background:var(--navy-900);
-    border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px;
-  }
-  .radar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-  .radar-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);font-weight:700;}
-  .radar-time{font-size:12px;font-family:monospace;color:var(--ink-dim);}
-  .session-grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:6px;}
-  .session-pill{
-    background:var(--sub-bg);border:1px solid var(--line);border-radius:8px;padding:6px;text-align:center;
-  }
-  .session-pill.active{border-color:var(--green);background:rgba(62,207,142,0.08);}
-  .session-pill.macro{border-color:var(--gold-bright);background:rgba(232,198,90,0.12);box-shadow:0 0 10px rgba(232,198,90,0.2);}
-  .session-name{font-size:10px;font-weight:700;display:block;color:var(--ink-dim);}
-  .session-pill.active .session-name{color:var(--green);}
-  .session-pill.macro .session-name{color:var(--gold-bright);}
-  .session-status{font-size:9px;color:var(--ink-dim);margin-top:2px;display:block;}
 
   .view-toggle{display:flex;gap:8px;margin-bottom:12px;background:var(--navy-900);border:1px solid var(--line);border-radius:12px;padding:4px;}
   .view-toggle button{flex:1;padding:9px;border:none;border-radius:9px;background:transparent;color:var(--ink-dim);font-weight:700;font-size:13px;cursor:pointer;}
@@ -238,27 +220,6 @@
     </div>
   </header>
 
-  <div class="radar-card">
-    <div class="radar-head">
-      <span class="radar-title">⚡ Session Radar (UTC-4 EST)</span>
-      <span class="radar-time" id="nyTime">00:00:00 EST</span>
-    </div>
-    <div class="session-grid">
-      <div class="session-pill" id="sess-asia">
-        <span class="session-name">ASIAN</span>
-        <span class="session-status" id="stat-asia">Closed</span>
-      </div>
-      <div class="session-pill" id="sess-london">
-        <span class="session-name">LONDON</span>
-        <span class="session-status" id="stat-london">Closed</span>
-      </div>
-      <div class="session-pill" id="sess-ny">
-        <span class="session-name">NEW YORK</span>
-        <span class="session-status" id="stat-ny">Closed</span>
-      </div>
-    </div>
-  </div>
-
   <div id="authBox" class="panel hidden">
     <h2 id="authTitle">Sign In</h2>
     <input id="a-name" placeholder="Full Name" class="hidden">
@@ -413,7 +374,6 @@ const livePrices = {};
 let cryptoWs = null;
 const activeCommentsListeners = {};
 
-// DYNAMIC PRECISION FORMATTER (Shows exact decimal points like 0.016848)
 function formatPrice(val) {
   if (val === null || val === undefined || isNaN(val)) return '---';
   const num = typeof val === 'number' ? val : parseFloat(val);
@@ -422,9 +382,9 @@ function formatPrice(val) {
   const abs = Math.abs(num);
   if (abs < 0.0001) return num.toFixed(7);
   if (abs < 0.01) return num.toFixed(6);
-  if (abs < 1) return num.toFixed(5); // For DOGE, ENA, etc.
-  if (abs < 20) return num.toFixed(4); // For EURUSD, small tokens
-  return num.toFixed(2); // Gold, BTC, Indices
+  if (abs < 1) return num.toFixed(5);
+  if (abs < 20) return num.toFixed(4);
+  return num.toFixed(2);
 }
 
 function initTheme() {
@@ -465,38 +425,6 @@ document.addEventListener('visibilitychange', () => {
     renderMemberFeed();
   }
 });
-
-function updateRadar() {
-  const now = new Date();
-  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-  const nyDate = new Date(utc - (4 * 3600000));
-  
-  const h = nyDate.getHours();
-  const m = nyDate.getMinutes();
-  const timeStr = [h, m, nyDate.getSeconds()].map(v => String(v).padStart(2, '0')).join(':');
-  document.getElementById('nyTime').textContent = timeStr + " EST";
-
-  const totalMin = (h * 60) + m;
-
-  const isLondon = totalMin >= 120 && totalMin <= 660;
-  const isLondonOpen = totalMin >= 120 && totalMin <= 300;
-  const lonPill = document.getElementById('sess-london');
-  lonPill.className = 'session-pill' + (isLondonOpen ? ' macro' : (isLondon ? ' active' : ''));
-  document.getElementById('stat-london').textContent = isLondonOpen ? '🔥 Open Killzone' : (isLondon ? 'Active' : 'Closed');
-
-  const isNY = totalMin >= 420 && totalMin <= 960;
-  const isNYMacro = totalMin >= 510 && totalMin <= 660;
-  const nyPill = document.getElementById('sess-ny');
-  nyPill.className = 'session-pill' + (isNYMacro ? ' macro' : (isNY ? ' active' : ''));
-  document.getElementById('stat-ny').textContent = isNYMacro ? '⚡ NY Macro' : (isNY ? 'Active' : 'Closed');
-
-  const isAsia = totalMin >= 1140 || totalMin < 120;
-  const asiaPill = document.getElementById('sess-asia');
-  asiaPill.className = 'session-pill' + (isAsia ? ' active' : '');
-  document.getElementById('stat-asia').textContent = isAsia ? 'Active' : 'Closed';
-}
-setInterval(updateRadar, 1000);
-updateRadar();
 
 function getPktMidnightTimestamp() {
   const now = new Date();
@@ -686,7 +614,6 @@ function computePnL(signal, autoLot) {
     return { text: `Profit: +$${pnl.toFixed(2)}`, type: 'win' };
   }
 
-  // Only real limit orders that are not triggered show Waiting Entry
   if ((status.includes('WAITING') || status.includes('PENDING')) && (signal.dir || '').includes('LIMIT')) {
     return { text: `Waiting Entry`, type: 'be' };
   }
@@ -848,7 +775,6 @@ function updateLiveCardDOM(sym, price) {
   });
 }
 
-// SMART TARGET & AUTO ENTRY CONTROLLER
 async function checkAutoTargets() {
   if (!currentMemberDoc || currentMemberDoc.role !== 'admin') return;
 
@@ -868,7 +794,6 @@ async function checkAutoTargets() {
     const tp2 = s.tp2 ? parseFloat(s.tp2) : null;
     const tp3 = s.tp3 ? parseFloat(s.tp3) : null;
 
-    // 1. If trade was marked waiting entry but is a market order OR price touched limit
     if (s.roadmapStatus === 'WAITING ENTRY') {
       if (!isLimit) {
         await db.collection('signals').doc(s.id).update({
@@ -1293,7 +1218,6 @@ function listenSignals(){
     });
 }
 
-// POST SIGNAL WITH IMMEDIATE MARKET TRIGGER LOGIC
 async function postSignal(){
   const pair = document.getElementById('a-pair').value.trim().toUpperCase();
   const market = document.getElementById('a-market').value;
@@ -1311,7 +1235,7 @@ async function postSignal(){
 
   let entry = parseFloat(entryInput);
   const isLimit = dir.includes('LIMIT');
-  let initialStatus = 'ENTRY TRIGGERED'; // Standard Market Order is ALWAYS triggered
+  let initialStatus = 'ENTRY TRIGGERED';
 
   if (!entryInput || entryInput.toUpperCase() === 'NOW' || isNaN(entry)) {
     if (cur) {
