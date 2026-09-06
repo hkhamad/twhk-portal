@@ -258,16 +258,16 @@
         <div class="grid2">
           <input id="a-pair" placeholder="Asset (e.g. DOGE / ENA / BTC / XAUUSD)" oninput="handlePairInput()">
           <select id="a-market">
-            <option value="CRYPTO">Cryptocurrency (Binance / MEXC)</option>
             <option value="FOREX">Forex & Indices (Oanda / Forex.com)</option>
+            <option value="CRYPTO">Cryptocurrency (Binance / MEXC)</option>
           </select>
         </div>
         <div class="grid2">
           <select id="a-dir">
-            <option value="LONG">LONG (Crypto Market)</option>
-            <option value="SHORT">SHORT (Crypto Market)</option>
             <option value="BUY">BUY (Forex Market)</option>
             <option value="SELL">SELL (Forex Market)</option>
+            <option value="LONG">LONG (Crypto Market)</option>
+            <option value="SHORT">SHORT (Crypto Market)</option>
             <option value="BUY LIMIT">BUY LIMIT (Pending)</option>
             <option value="SELL LIMIT">SELL LIMIT (Pending)</option>
           </select>
@@ -369,7 +369,10 @@ let authMode = 'login';
 let currentUid = null;
 let currentMemberDoc = null;
 let signalsCache = [];
-let activeMarketTab = 'CRYPTO';
+
+// STRICT INITIAL STATE: Matches active class on HTML
+let activeMarketTab = 'FOREX';
+
 const livePrices = {};
 let cryptoWs = null;
 const activeCommentsListeners = {};
@@ -647,7 +650,7 @@ function computePnL(signal, autoLot) {
 
 function subscribeToMarketFeeds() {
   const cryptoPairs = signalsCache
-    .filter(s => s.market === 'CRYPTO' && !s.result)
+    .filter(s => (s.market || 'FOREX') === 'CRYPTO' && !s.result)
     .map(s => normalizePair(s.pair, 'CRYPTO').toLowerCase())
     .filter(Boolean);
 
@@ -679,7 +682,7 @@ function subscribeToMarketFeeds() {
 }
 
 async function pollUniversalForexRates() {
-  const activeForex = signalsCache.filter(s => s.market === 'FOREX' && !s.result);
+  const activeForex = signalsCache.filter(s => (s.market || 'FOREX') === 'FOREX' && !s.result);
   pollForexExnessRates();
 
   for (const s of activeForex) {
@@ -762,7 +765,7 @@ function updateLiveCardDOM(sym, price) {
   });
 
   signalsCache.forEach(s => {
-    const sPair = normalizePair(s.pair, s.market);
+    const sPair = normalizePair(s.pair, s.market || 'FOREX');
     if ((sPair === sym || s.pair.toUpperCase() === sym) && !s.result) {
       const autoLot = computeLotSize(s);
       const pnlData = computePnL(s, autoLot);
@@ -781,7 +784,7 @@ async function checkAutoTargets() {
   for (const s of signalsCache) {
     if (s.result) continue;
 
-    const pairKey = normalizePair(s.pair, s.market);
+    const pairKey = normalizePair(s.pair, s.market || 'FOREX');
     const cur = livePrices[pairKey] || livePrices[s.pair.toUpperCase()];
     if (!cur) continue;
 
@@ -1002,7 +1005,7 @@ function hasMarketAccess(market, isAdmin) {
 }
 
 function feedCard(s, isAdmin){
-  const market = s.market || 'CRYPTO';
+  const market = s.market || 'FOREX';
   const isUnlocked = hasMarketAccess(market, isAdmin);
   const val = (v) => isUnlocked ? v : `<span class="locked-val">${v}</span>`;
   
@@ -1134,7 +1137,7 @@ function feedCard(s, isAdmin){
 }
 
 function buildTeaserCardHTML(s) {
-  const market = s.market || 'CRYPTO';
+  const market = s.market || 'FOREX';
   const e = parseFloat(s.entry), sl = parseFloat(s.sl), tp = parseFloat(s.tp1);
   const rr = calculateRR(e, sl, tp);
   const code = s.tradeCode;
@@ -1183,11 +1186,12 @@ function buildTeaserCardHTML(s) {
     </div>`;
 }
 
+// STRICT TAB FILTERING: FOREX SHOWS ONLY FOREX, CRYPTO SHOWS ONLY CRYPTO
 function renderMemberFeed() {
   const pktMidnight = getPktMidnightTimestamp();
   
   const filtered = signalsCache.filter(s => {
-    const market = s.market || 'CRYPTO';
+    const market = s.market || 'FOREX';
     if (market !== activeMarketTab) return false;
 
     const status = (s.roadmapStatus || '').toUpperCase();
