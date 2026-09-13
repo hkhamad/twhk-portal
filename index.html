@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#070c14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>TW-HK Live Signals App</title>
+
+<style>
+  :root{
+    --navy-950:#070c14; --navy-900:#0b1420; --navy-800:#101c2c; --navy-700:#182740;
+    --accent:#c9a227; --accent-bright:#e8c65a;
+    --green:#3ecf8e; --red:#e2564f; --blue:#4a9eff; --purple:#9b6bd9;
+    --ink:#e9edf3; --ink-dim:#8fa0b8; --line:#22314a;
+    --card-bg:#0b1420; --sub-bg:#070c14;
+    --font-size-base:13px;
+    --card-padding:14px;
+  }
+
+  body.light-theme {
+    --navy-950:#f4f6fa; --navy-900:#ffffff; --navy-800:#e5eaf2; --navy-700:#d2dbe8;
+    --accent:#b88e14; --accent-bright:#8c6b07;
+    --green:#1fa869; --red:#d93830; --blue:#1d7be6;
+    --purple:#7f4cc4; --ink:#0f172a; --ink-dim:#64748b; --line:#cbd5e1;
+    --card-bg:#ffffff; --sub-bg:#f1f5f9;
+  }
+
+  /* Accent overrides */
+  body.accent-blue { --accent:#1d7be6; --accent-bright:#4a9eff; }
+  body.accent-green { --accent:#1fa869; --accent-bright:#3ecf8e; }
+  body.accent-purple { --accent:#7f4cc4; --accent-bright:#9b6bd9; }
+  body.accent-red { --accent:#d93830; --accent-bright:#e2564f; }
+
+  /* Font size variants */
+  body.font-small { --font-size-base:12px; }
+  body.font-medium { --font-size-base:13px; }
+  body.font-large { --font-size-base:15px; }
+
+  /* Card padding variants */
+  body.card-compact { --card-padding:10px; }
+  body.card-comfortable { --card-padding:16px; }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{background:var(--navy-950);}
+  body{
+    margin:0;color:var(--ink);
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    min-height:100vh;padding:12px 12px calc(60px + env(safe-area-inset-bottom));
+    padding-top:calc(12px + env(safe-area-inset-top));
+    transition:background 0.25s ease, color 0.25s ease;
+    font-size:var(--font-size-base);
+  }
+  .wrap{max-width:520px;margin:0 auto;}
+
+  /* HEADER */
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 2px;gap:8px;}
+  .header-left{display:flex;align-items:center;gap:6px;}
+  .header-right{display:flex;align-items:center;gap:6px;}
+  .brand-group{text-align:right;}
+  .brand{font-family:Georgia,'Times New Roman',serif;font-size:19px;letter-spacing:0.5px;color:var(--accent-bright);font-weight:700;line-height:1.1;}
+  .brand span{color:var(--ink);}
+  .tag{color:var(--ink-dim);font-size:9px;margin-top:1px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;}
+  .status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;box-shadow:0 0 5px var(--green);}
+  .icon-btn{
+    background:var(--navy-900);border:1px solid var(--line);color:var(--accent-bright);
+    height:36px;width:36px;padding:0;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;
+  }
+  .icon-btn:active{opacity:0.7;}
+
+  /* TABS */
+  .view-toggle{display:flex;gap:6px;margin-bottom:10px;background:var(--navy-900);border:1px solid var(--line);border-radius:12px;padding:4px;}
+  .view-toggle button{flex:1;padding:9px;border:none;border-radius:9px;background:transparent;color:var(--ink-dim);font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;}
+  .view-toggle button.active{background:var(--accent);color:#070c14;}
+  .market-tabs{display:flex;gap:6px;margin-bottom:10px;}
+  .market-tab-btn{
+    flex:1;padding:9px 6px;border-radius:10px;border:1px solid var(--line);background:var(--navy-900);
+    color:var(--ink-dim);font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;
+    display:flex;align-items:center;justify-content:center;gap:6px;
+  }
+  .market-tab-btn.active.forex{background:rgba(201,162,39,0.15);border-color:var(--accent);color:var(--accent-bright);}
+  .market-tab-btn.active.crypto{background:rgba(155,107,217,0.15);border-color:var(--purple);color:#8d5cc9;}
+
+  .panel{background:var(--navy-900);border:1px solid var(--line);border-radius:14px;padding:var(--card-padding);margin-bottom:12px;}
+  .panel h2{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin:0 0 10px;display:flex;align-items:center;gap:6px;font-weight:700;}
+  .panel h2::before{content:"";width:12px;height:2px;background:var(--accent);display:inline-block;}
+
+  input,select,textarea{width:100%;background:var(--sub-bg);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:10px 12px;font-size:12px;font-family:inherit;margin-bottom:8px;}
+  textarea{resize:vertical;min-height:70px;}
+  .btn{width:100%;padding:11px;border-radius:10px;border:none;background:var(--accent);color:#070c14;font-weight:700;font-size:12px;cursor:pointer;margin-top:4px;font-family:inherit;}
+  .btn:disabled{opacity:0.6;cursor:not-allowed;}
+  .link-btn{background:none;border:none;color:var(--accent-bright);font-size:12px;cursor:pointer;text-decoration:underline;padding:0;margin-top:6px;font-family:inherit;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+  /* FEED CARD */
+  .feed-item{
+    background:var(--card-bg);border:1px solid var(--line);border-radius:16px;
+    padding:var(--card-padding);margin-bottom:12px;position:relative;
+    box-shadow:0 8px 24px rgba(0,0,0,0.25);overflow:hidden;
+  }
+  .feed-item.market-FOREX{border-top:3px solid var(--accent);}
+  .feed-item.market-CRYPTO{border-top:3px solid var(--purple);}
+
+  .feed-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;}
+  .feed-pair{font-family:Georgia,serif;font-weight:700;font-size:17px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .market-badge{font-size:9px;font-weight:800;padding:2px 6px;border-radius:6px;letter-spacing:0.5px;}
+  .market-badge.FOREX{background:rgba(201,162,39,.15);color:var(--accent-bright);border:1px solid var(--accent);}
+  .market-badge.CRYPTO{background:rgba(155,107,217,.18);color:#8d5cc9;border:1px solid var(--purple);}
+
+  .trade-code{font-family:monospace;font-size:10px;font-weight:700;background:var(--sub-bg);border:1px solid var(--line);color:var(--accent-bright);padding:2px 6px;border-radius:5px;letter-spacing:0.5px;}
+  .feed-dir{font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;letter-spacing:0.5px;}
+  .feed-dir.BUY,.feed-dir.LONG{background:rgba(62,207,142,.15);color:var(--green);border:1px solid var(--green);}
+  .feed-dir.SELL,.feed-dir.SHORT{background:rgba(226,86,79,.15);color:var(--red);border:1px solid var(--red);}
+  .feed-dir.BUYLIMIT,.feed-dir.SELLLIMIT,.feed-dir.LONGLIMIT,.feed-dir.SHORTLIMIT{background:rgba(74,158,255,.15);color:var(--blue);border:1px solid var(--blue);}
+
+  .roadmap-badge{
+    background:rgba(74,158,255,0.12);border:1px solid var(--blue);color:var(--blue);
+    padding:6px 10px;border-radius:8px;font-size:11px;font-weight:700;margin-bottom:8px;
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+  }
+  .roadmap-badge.pending{border-color:var(--ink-dim);color:var(--ink-dim);background:rgba(143,160,184,0.12);}
+  .roadmap-badge.be{border-color:var(--green);color:var(--green);background:rgba(62,207,142,0.12);}
+  .roadmap-badge.tp{border-color:var(--accent-bright);color:var(--accent-bright);background:rgba(232,198,90,0.15);}
+  .roadmap-badge.sl{border-color:var(--red);color:var(--red);background:rgba(226,86,79,0.15);}
+
+  .pnl-box{background:var(--sub-bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .pnl-box .label{font-size:9px;color:var(--ink-dim);text-transform:uppercase;font-weight:700;letter-spacing:0.5px;}
+  .pnl-box .value{font-size:14px;font-weight:800;font-family:monospace;}
+  .pnl-box .value.win{color:var(--green);}
+  .pnl-box .value.loss{color:var(--red);}
+  .pnl-box .value.be{color:var(--green);}
+  .pnl-box .value.neutral{color:var(--ink-dim);font-size:12px;font-family:inherit;font-weight:600;}
+
+  .rr-visual{margin-bottom:8px;background:var(--sub-bg);border:1px solid var(--line);border-radius:8px;padding:8px;}
+  .rr-track{height:5px;width:100%;border-radius:3px;background:var(--line);display:flex;overflow:hidden;margin-top:5px;}
+  .rr-risk{background:var(--red);height:100%;}
+  .rr-reward{background:var(--green);height:100%;}
+  .rr-meta{display:flex;justify-content:space-between;font-size:10px;font-weight:700;}
+
+  .feed-levels{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:11px;margin-bottom:6px;}
+  .feed-levels div{background:var(--sub-bg);border:1px solid var(--line);border-radius:8px;padding:6px 4px;text-align:center;}
+  .feed-levels .k{color:var(--ink-dim);font-size:9px;display:block;text-transform:uppercase;font-weight:700;letter-spacing:0.3px;}
+  .v-entry{color:var(--blue);font-weight:700;display:block;margin-top:3px;font-family:monospace;font-size:11px;}
+  .v-sl{color:var(--red);font-weight:700;display:block;margin-top:3px;font-family:monospace;font-size:11px;}
+  .v-tp{color:var(--green);font-weight:700;display:block;margin-top:3px;font-family:monospace;font-size:11px;}
+
+  .locked-val{filter:blur(5px);user-select:none;opacity:0.7;}
+  .upgrade-note{margin-bottom:8px;font-size:11px;color:var(--accent);background:rgba(201,162,39,.1);border:1px dashed var(--accent);border-radius:10px;padding:10px;text-align:center;font-weight:600;line-height:1.4;}
+  .upgrade-note.crypto{color:#8d5cc9;background:rgba(155,107,217,.1);border-color:var(--purple);}
+
+  .card-footer-info{display:flex;justify-content:space-between;align-items:center;padding:8px 0 0;border-top:1px dashed var(--line);font-size:10px;color:var(--ink-dim);margin-top:6px;gap:8px;}
+  .auto-lot-text{font-weight:700;color:var(--ink);}
+
+  .whatsapp-share-btn{
+    width:100%;background:rgba(62,207,142,0.12);border:1px solid var(--green);color:var(--green);
+    font-weight:700;font-size:11px;padding:8px;border-radius:8px;cursor:pointer;margin-top:8px;
+    display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit;letter-spacing:0.3px;
+  }
+
+  .btn-del{width:100%;margin-top:6px;padding:7px;border-radius:6px;border:1px solid var(--red);background:transparent;color:var(--red);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.3px;}
+
+  .chat-box-card{margin-top:8px;background:var(--sub-bg);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  .chat-toggle-btn{width:100%;background:transparent;border:none;color:var(--ink-dim);padding:9px 10px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:inherit;letter-spacing:0.3px;}
+  .chat-panel{padding:8px 10px 10px;border-top:1px solid var(--line);}
+  .chat-messages{max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:8px;padding-right:4px;}
+  .chat-msg-row{background:var(--card-bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:11px;}
+  .chat-msg-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;font-size:10px;color:var(--ink-dim);gap:6px;}
+  .chat-msg-author{font-weight:700;color:var(--accent-bright);}
+  .chat-msg-author.admin{color:var(--green);}
+  .chat-msg-text{color:var(--ink);word-break:break-word;line-height:1.35;}
+  .chat-input-row{display:flex;gap:6px;}
+  .chat-input-row input{margin-bottom:0;padding:7px 8px;font-size:11px;}
+  .chat-send-btn{background:var(--accent);border:none;border-radius:8px;padding:0 14px;color:#070c14;font-weight:700;font-size:11px;cursor:pointer;font-family:inherit;}
+
+  .empty{color:var(--ink-dim);font-size:12px;text-align:center;padding:20px 0;}
+  .hidden{display:none !important;}
+  .errbox{font-size:11px;color:var(--red);margin-top:-4px;margin-bottom:8px;min-height:14px;}
+  .result-badge{font-size:9px;font-weight:700;padding:3px 8px;border-radius:5px;margin-top:6px;display:inline-block;letter-spacing:0.5px;}
+  .result-badge.WIN{background:rgba(62,207,142,.15);color:var(--green);}
+  .result-badge.LOSS{background:rgba(226,86,79,.15);color:var(--red);}
+  .result-badge.BE{background:rgba(62,207,142,.15);color:var(--green);}
+
+  /* LOGIN POPUP */
+  .login-overlay{
+    position:fixed;inset:0;background:var(--navy-950);
+    z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;
+    opacity:0;pointer-events:none;transition:opacity 0.25s ease;
+  }
+  .login-overlay.open{opacity:1;pointer-events:auto;}
+  .login-card{
+    background:var(--navy-900);border:1px solid var(--accent);border-radius:20px;
+    width:100%;max-width:400px;padding:24px 22px;
+    box-shadow:0 16px 48px rgba(0,0,0,0.6);
+    text-align:center;
+  }
+  .login-logo{width:80px;height:80px;border-radius:20px;object-fit:cover;margin-bottom:14px;border:2px solid var(--accent);background:var(--sub-bg);}
+  .login-title{font-family:Georgia,serif;font-size:20px;color:var(--accent-bright);font-weight:700;margin:0 0 4px;letter-spacing:0.5px;}
+  .login-subtitle{font-size:10px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:18px;font-weight:600;}
+  .login-card input{text-align:left;}
+  .login-card .btn{margin-top:8px;}
+
+  /* SETTINGS MODAL */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(4px);
+    z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;
+    opacity:0;pointer-events:none;transition:all 0.25s ease;
+  }
+  .modal-overlay.open{opacity:1;pointer-events:auto;}
+  .settings-card{
+    background:var(--navy-900);border:1px solid var(--accent);border-radius:16px;
+    width:100%;max-width:460px;padding:18px;max-height:90vh;overflow-y:auto;
+    box-shadow:0 12px 36px rgba(0,0,0,0.6);
+  }
+  .settings-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:10px;}
+  .settings-head h3{margin:0;font-size:12px;color:var(--accent-bright);text-transform:uppercase;letter-spacing:1.2px;font-weight:700;}
+  .close-btn{background:none;border:none;color:var(--ink-dim);font-size:18px;cursor:pointer;line-height:1;padding:4px;}
+  .settings-section{margin-bottom:16px;}
+  .settings-section label{font-size:10px;color:var(--ink-dim);text-transform:uppercase;display:block;margin-bottom:8px;font-weight:700;letter-spacing:0.5px;}
+  .user-badge{background:var(--sub-bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .logout-action{background:rgba(226,86,79,0.12);border:1px solid var(--red);color:var(--red);padding:11px;border-radius:10px;width:100%;font-weight:700;font-size:12px;cursor:pointer;margin-top:14px;font-family:inherit;letter-spacing:0.5px;}
+
+  .stats-grid{display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;margin-bottom:8px;}
+  .stat-card{background:var(--sub-bg);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center;}
+  .stat-card-title{font-size:9px;color:var(--ink-dim);text-transform:uppercase;font-weight:700;display:block;margin-bottom:4px;letter-spacing:0.5px;}
+  .stat-card-val{font-size:15px;font-weight:800;font-family:monospace;}
+  .stat-card-val.win{color:var(--green);}
+  .stat-card-val.loss{color:var(--red);}
+  .stat-card-val.be{color:var(--green);}
+  .stat-card-val.neutral{color:var(--accent-bright);}
+  .stat-net-banner{background:var(--sub-bg);border:1px solid var(--line);border-radius:10px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;}
+
+  .member-row{background:var(--sub-bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;margin-bottom:8px;display:flex;flex-direction:column;gap:6px;}
+  .member-row-top{display:flex;justify-content:space-between;align-items:center;font-size:11px;gap:8px;}
+  .tier-select{background:var(--navy-900);border:1px solid var(--line);color:var(--accent-bright);font-size:11px;padding:5px 8px;border-radius:6px;margin-bottom:0;font-family:inherit;}
+
+  /* ADMIN ACTION BUTTONS */
+  .admin-status-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);}
+  .admin-status-actions .full-row{grid-column:1 / -1;}
+  .status-btn{
+    padding:9px 6px;border-radius:8px;border:1px solid var(--line);background:var(--sub-bg);
+    color:var(--ink);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;
+    letter-spacing:0.3px;transition:all 0.15s;
+  }
+  .status-btn:hover:not(:disabled){opacity:0.85;}
+  .status-btn:disabled{opacity:0.3;cursor:not-allowed;}
+  .status-btn.active{box-shadow:0 0 0 2px var(--accent);}
+  .status-btn.entry{border-color:var(--blue);color:var(--blue);}
+  .status-btn.be{border-color:var(--green);color:var(--green);}
+  .status-btn.tp{border-color:var(--accent-bright);color:var(--accent-bright);}
+  .status-btn.sl{border-color:var(--red);color:var(--red);}
+  .status-btn.entry.active{background:rgba(74,158,255,0.15);}
+  .status-btn.be.active{background:rgba(62,207,142,0.15);}
+  .status-btn.tp.active{background:rgba(232,198,90,0.15);}
+  .status-btn.sl.active{background:rgba(226,86,79,0.15);}
+
+  /* WHATSAPP POPUP */
+  .wa-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);
+    z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px;
+    opacity:0;pointer-events:none;transition:opacity 0.2s ease;
+  }
+  .wa-overlay.open{opacity:1;pointer-events:auto;}
+  .wa-card{
+    background:var(--navy-900);border:1px solid var(--green);border-radius:16px;
+    width:100%;max-width:400px;padding:20px;text-align:center;
+    box-shadow:0 12px 36px rgba(0,0,0,0.6);
+  }
+  .wa-title{font-size:13px;color:var(--green);font-weight:700;margin-bottom:10px;letter-spacing:0.5px;}
+  .wa-message{
+    background:var(--sub-bg);border:1px solid var(--line);border-radius:10px;
+    padding:12px;margin-bottom:14px;font-family:monospace;font-size:12px;
+    color:var(--ink);text-align:left;word-break:break-word;line-height:1.5;
+  }
+  .wa-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .wa-btn{padding:10px;border-radius:9px;border:none;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;letter-spacing:0.3px;}
+  .wa-btn-share{background:var(--green);color:#070c14;}
+  .wa-btn-close{background:var(--sub-bg);color:var(--ink);border:1px solid var(--line);}
+
+  /* APPEARANCE OPTIONS */
+  .appearance-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+  .appearance-opt{
+    flex:1;min-width:60px;padding:8px 6px;border-radius:8px;border:1px solid var(--line);
+    background:var(--sub-bg);color:var(--ink-dim);font-size:10px;font-weight:700;
+    cursor:pointer;font-family:inherit;text-align:center;letter-spacing:0.3px;
+  }
+  .appearance-opt.active{border-color:var(--accent);color:var(--accent-bright);background:rgba(201,162,39,0.1);}
+  .appearance-opt.color-gold.active{border-color:#c9a227;color:#e8c65a;}
+  .appearance-opt.color-blue.active{border-color:#1d7be6;color:#4a9eff;}
+  .appearance-opt.color-green.active{border-color:#1fa869;color:#3ecf8e;}
+  .appearance-opt.color-purple.active{border-color:#7f4cc4;color:#9b6bd9;}
+  .appearance-opt.color-red.active{border-color:#d93830;color:#e2564f;}
+
+  #snapshotContainer{position:fixed;left:-9999px;top:-9999px;width:420px;padding:16px;border-radius:16px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="header-left">
+      <button class="icon-btn" id="openSettingsBtn" onclick="toggleSettings(true)" title="Settings" aria-label="Settings">&#9881;</button>
+      <span class="status-dot" title="Active"></span>
+    </div>
+    <div class="brand-group">
+      <div class="brand">TW<span>-</span>HK</div>
+      <div class="tag">Live Signals App</div>
+    </div>
+    <div class="header-right">
+      <button class="icon-btn" onclick="toggleTheme()" id="themeToggleBtn" title="Toggle Theme" aria-label="Toggle Theme">&#9788;</button>
+    </div>
+  </header>
+
+  <div id="appBox" class="hidden">
+    <div class="view-toggle" id="viewToggle">
+      <button id="btn-member" class="active" onclick="switchView('member')">Live Signals</button>
+      <button id="btn-admin" onclick="switchView('admin')">Admin Hub</button>
+    </div>
+
+    <div id="memberView">
+      <div class="market-tabs">
+        <button id="tab-forex" class="market-tab-btn active forex" onclick="switchMarketTab('FOREX')">Forex &amp; Indices</button>
+        <button id="tab-crypto" class="market-tab-btn crypto" onclick="switchMarketTab('CRYPTO')">Crypto Futures</button>
+      </div>
+
+      <div class="panel">
+        <h2 id="feedSectionTitle">Forex &amp; Indices Signals</h2>
+        <div id="memberFeed"><div class="empty">Loading signals...</div></div>
+      </div>
+    </div>
+
+    <div id="adminView" class="hidden">
+      <div class="panel" style="border: 1px dashed var(--accent);">
+        <h2>Quick Paste Parser</h2>
+        <div style="font-size:11px;color:var(--ink-dim);margin-bottom:6px;">Paste raw signal text here:</div>
+        <textarea id="quickRawText" placeholder="Paste signal text here..."></textarea>
+        <button class="btn" style="background:var(--blue);color:#fff;margin-top:0;" onclick="parseRawSignalText()">Auto-Fill Form</button>
+      </div>
+
+      <div class="panel">
+        <h2>Deploy New Signal</h2>
+        <div class="grid2">
+          <input id="a-pair" placeholder="Asset (XAUUSD, EURUSD, BTCUSDT)" oninput="onPairInput()" onblur="onPairInput()">
+        </div>
+        <div class="grid2">
+          <select id="a-dir">
+            <option value="">-- Select Direction --</option>
+          </select>
+          <input id="a-entry" placeholder="Entry Level" type="number" step="any">
+        </div>
+        <div class="grid2">
+          <input id="a-sl" placeholder="Stop Loss" type="number" step="any">
+          <input id="a-tp1" placeholder="Take Profit 1" type="number" step="any">
+        </div>
+        <div class="grid2">
+          <input id="a-tp2" placeholder="Take Profit 2 (Optional)" type="number" step="any">
+          <input id="a-tp3" placeholder="Take Profit 3 (Optional)" type="number" step="any">
+        </div>
+        <div id="autoDetectInfo" style="font-size:11px;color:var(--ink-dim);margin-bottom:8px;min-height:14px;"></div>
+        <button class="btn" id="btnPublish" onclick="postSignal()">Publish Signal</button>
+      </div>
+
+      <div class="panel">
+        <h2>Active Deployed Orders</h2>
+        <div id="adminFeed"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Portal Access Control (Members)</h2>
+        <div id="membersList"><div class="empty">Loading subscriber list...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="snapshotContainer"></div>
+
+<!-- LOGIN POPUP -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <img src="icon-192.png" alt="TW-HK" class="login-logo" onerror="this.style.display='none'">
+    <h2 class="login-title" id="authTitle">Sign In</h2>
+    <div class="login-subtitle" id="authSubtitle">TW-HK Live Signals App</div>
+    <input id="a-name" placeholder="Full Name" class="hidden">
+    <input id="a-email" type="email" placeholder="Email Address" autocomplete="email">
+    <input id="a-pass" type="password" placeholder="Password" autocomplete="current-password">
+    <div class="errbox" id="authErr"></div>
+    <button class="btn" id="authSubmit" onclick="handleAuthSubmit()">Sign In</button>
+    <button class="link-btn" onclick="toggleAuthMode()">Request Portal Access</button>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="settings-card">
+    <div class="settings-head">
+      <h3>Portal Settings</h3>
+      <button class="close-btn" onclick="toggleSettings(false)" aria-label="Close">&#10005;</button>
+    </div>
+
+    <div class="user-badge">
+      <div>
+        <div style="font-weight:700;font-size:13px;" id="settUserName">-</div>
+        <div style="font-size:11px;color:var(--ink-dim);" id="settUserEmail">-</div>
+      </div>
+      <span class="trade-code" id="settUserTier">FREE</span>
+    </div>
+
+    <div class="settings-section">
+      <label>Appearance</label>
+      <div style="font-size:10px;color:var(--ink-dim);margin-bottom:6px;">Accent Color</div>
+      <div class="appearance-row" id="accentOptions">
+        <button class="appearance-opt color-gold active" onclick="setAccent('gold')">Gold</button>
+        <button class="appearance-opt color-blue" onclick="setAccent('blue')">Blue</button>
+        <button class="appearance-opt color-green" onclick="setAccent('green')">Green</button>
+        <button class="appearance-opt color-purple" onclick="setAccent('purple')">Purple</button>
+        <button class="appearance-opt color-red" onclick="setAccent('red')">Red</button>
+      </div>
+      <div style="font-size:10px;color:var(--ink-dim);margin-bottom:6px;">Font Size</div>
+      <div class="appearance-row" id="fontOptions">
+        <button class="appearance-opt" onclick="setFontSize('small')">Small</button>
+        <button class="appearance-opt active" onclick="setFontSize('medium')">Medium</button>
+        <button class="appearance-opt" onclick="setFontSize('large')">Large</button>
+      </div>
+      <div style="font-size:10px;color:var(--ink-dim);margin-bottom:6px;">Card Style</div>
+      <div class="appearance-row" id="cardOptions">
+        <button class="appearance-opt" onclick="setCardStyle('compact')">Compact</button>
+        <button class="appearance-opt active" onclick="setCardStyle('comfortable')">Comfortable</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <label>Today Performance Summary</label>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-card-title">Total Trades</span>
+          <span class="stat-card-val neutral" id="statTodayTrades">0</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card-title">Break Even</span>
+          <span class="stat-card-val be" id="statTodayBE">0</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card-title">Total Profit</span>
+          <span class="stat-card-val win" id="statTodayProfit">+$0.00</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card-title">Total Loss</span>
+          <span class="stat-card-val loss" id="statTodayLoss">-$0.00</span>
+        </div>
+      </div>
+      <div class="stat-net-banner">
+        <span>Net Today Result</span>
+        <span id="statTodayNet" class="stat-card-val neutral">$0.00</span>
+      </div>
+    </div>
+
+    <div class="settings-section" id="riskSection">
+      <label>Risk &amp; Auto-Lot Management (Admin)</label>
+      <div class="grid2">
+        <div>
+          <span style="font-size:10px;color:var(--ink-dim);">Account Balance ($)</span>
+          <input type="number" id="settBalance" placeholder="1000" oninput="saveRiskSettings()">
+        </div>
+        <div>
+          <span style="font-size:10px;color:var(--ink-dim);">Risk per Trade ($)</span>
+          <input type="number" id="settRiskAmount" placeholder="10" oninput="saveRiskSettings()">
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--green);margin-top:2px;" id="riskCalcSummary">
+        Set your capital to auto-size all signal lots.
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <label>System Info</label>
+      <div style="font-size:11px;color:var(--ink-dim);background:var(--sub-bg);padding:8px 10px;border-radius:8px;border:1px solid var(--line);line-height:1.6;">
+        Timezone: <b style="color:var(--ink);">UTC-4 EST (New York)</b><br>
+        Daily Reset: <b style="color:var(--ink);">12:00 AM Pakistan Time</b><br>
+        Mode: <b style="color:var(--ink);">Manual Signal Management</b>
+      </div>
+    </div>
+
+    <button class="logout-action" onclick="doLogout()">Sign Out</button>
+  </div>
+</div>
+
+<!-- WHATSAPP POPUP -->
+<div class="wa-overlay" id="waOverlay">
+  <div class="wa-card">
+    <div class="wa-title">Status Updated</div>
+    <div class="wa-message" id="waMessage"></div>
+    <div class="wa-actions">
+      <button class="wa-btn wa-btn-share" onclick="confirmWhatsAppShare()">Share</button>
+      <button class="wa-btn wa-btn-close" onclick="closeWaPopup()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyD1GgHel2TPnmuemGTD0w50W-DWsaVKW5E",
+  authDomain: "tw-hk-32169.firebaseapp.com",
+  projectId: "tw-hk-32169",
+  storageBucket: "tw-hk-32169.firebasestorage.app",
+  messagingSenderId: "844851720789",
+  appId: "1:844851720789:web:5608a7084081b5a85c1adc"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let authMode = 'login';
+let currentUid = null;
+let currentMemberDoc = null;
+let signalsCache = [];
+let activeMarketTab = 'FOREX';
+const activeCommentsListeners = {};
+let pendingWaMessage = '';
+
+// ============================================================
+// MULTIPLIERS
+// ============================================================
+const MULTIPLIERS = {
+  FOREX_MAJOR: 100000,
+  GOLD: 100,
+  SILVER: 5000,
+  US100: 20,
+  US30: 20,
+  SPX500: 50,
+  CRYPTO: 1
+};
+
+function getMultiplier(cleanPair, market) {
+  const p = (cleanPair || '').toUpperCase();
+  if (market === 'CRYPTO') return MULTIPLIERS.CRYPTO;
+  if (p.includes('XAU') || p.includes('GOLD')) return MULTIPLIERS.GOLD;
+  if (p.includes('XAG') || p.includes('SILVER')) return MULTIPLIERS.SILVER;
+  if (p.includes('US100') || p.includes('NAS')) return MULTIPLIERS.US100;
+  if (p.includes('US30') || p.includes('DJI')) return MULTIPLIERS.US30;
+  if (p.includes('SPX')) return MULTIPLIERS.SPX500;
+  return MULTIPLIERS.FOREX_MAJOR;
+}
+
+// ============================================================
+// UTILITY
+// ============================================================
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function formatPrice(val) {
+  if (val === null || val === undefined || isNaN(val)) return '—';
+  const num = typeof val === 'number' ? val : parseFloat(val);
+  if (isNaN(num)) return '—';
+  if (num === 0) return '0.00';
+  const abs = Math.abs(num);
+  if (abs < 0.0001) return num.toFixed(7);
+  if (abs < 0.01) return num.toFixed(6);
+  if (abs < 10) return num.toFixed(5);
+  if (abs < 20) return num.toFixed(4);
+  return num.toFixed(2);
+}
+
+function formatPktDateTime(timestamp) {
+  if (!timestamp) return '';
+  const dateObj = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  return dateObj.toLocaleString('en-US', {
+    timeZone: 'Asia/Karachi',
+    day: '2-digit', month: 'short',
+    hour: '2-digit', minute: '2-digit', hour12: true
+  });
+}
+
+// ============================================================
+// PKT TIMEZONE
+// ============================================================
+function getPktMidnightTimestamp() {
+  const now = new Date();
+  const pktParts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Karachi',
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(now);
+  const y = pktParts.find(p => p.type === 'year').value;
+  const m = pktParts.find(p => p.type === 'month').value;
+  const d = pktParts.find(p => p.type === 'day').value;
+  return Date.UTC(parseInt(y), parseInt(m) - 1, parseInt(d), 0, 0, 0) - (5 * 3600000);
+}
+
+// ============================================================
+// MARKET DETECTION
+// ============================================================
+function resolveMarket(sOrPair) {
+  const p = typeof sOrPair === 'string'
+    ? sOrPair.toUpperCase()
+    : ((sOrPair && sOrPair.pair) || '').toUpperCase();
+  if (!p) return 'FOREX';
+  const cryptoKeywords = ['USDT', 'BUSD', 'BTC', 'ETH', 'SOL', 'XRP', 'DOGE',
+                          'PEPE', 'ENA', 'ADA', 'AVAX', 'BNB', 'LTC', 'MATIC'];
+  if (cryptoKeywords.some(k => p.includes(k))) return 'CRYPTO';
+  return 'FOREX';
+}
+
+function normalizePair(pair, market) {
+  let p = (pair || '').replace(/[^A-Z0-9]/gi, '').toUpperCase();
+  if (market === 'CRYPTO') {
+    if (!p.endsWith('USDT') && !p.endsWith('BUSD') && !p.endsWith('USD')) p += 'USDT';
+    if (p.endsWith('USD') && !p.endsWith('USDT')) p = p.replace(/USD$/, 'USDT');
+  } else {
+    if (p === 'GOLD' || p === 'XAU') p = 'XAUUSD';
+    if (['NAS100','NAS','US100','USTEC','USTECUSD','NASDAQ'].includes(p)) p = 'US100USD';
+    if (p === 'US30' || p === 'DJI') p = 'US30USD';
+    if (p === 'SPX500' || p === 'SPX') p = 'SPX500USD';
+    if (p.length === 3 && !p.endsWith('USD')) p += 'USD';
+    if (p.length === 6 && !p.endsWith('USD')) p += 'USD';
+  }
+  return p;
+}
+
+// ============================================================
+// DIRECTION KEY FOR CSS
+// ============================================================
+function dirClass(dir) {
+  return (dir || '').toUpperCase().replace(/\s+/g, '');
+}
+
+// ============================================================
+// RISK / LOT
+// ============================================================
+function getRiskSettings() {
+  const bal = parseFloat(localStorage.getItem('hk_balance')) || 0;
+  let riskAmt = parseFloat(localStorage.getItem('hk_risk_amt')) || 0;
+  if (!riskAmt && bal > 0) riskAmt = bal * 0.01;
+  if (!riskAmt) riskAmt = 10;
+  return { balance: bal, riskAmt };
+}
+
+function computeLotSize(signal) {
+  const { riskAmt } = getRiskSettings();
+  const entry = parseFloat(signal.entry);
+  const sl = parseFloat(signal.sl);
+  const slDist = Math.abs(entry - sl);
+  const market = resolveMarket(signal);
+  const cleanPair = normalizePair(signal.pair, market);
+
+  if (!slDist) {
+    return { label: 'Position Size', val: '—', rawLot: 0, isCrypto: market === 'CRYPTO', riskDollar: riskAmt };
+  }
+  const mult = signal.multiplierSnapshot || getMultiplier(cleanPair, market);
+  let lot = riskAmt / (slDist * mult);
+
+  if (market === 'CRYPTO') {
+    return { label: 'Position Size', val: lot.toFixed(4) + ' units', rawLot: lot, isCrypto: true, riskDollar: riskAmt };
+  }
+  lot = Math.floor(lot * 100) / 100;
+  if (lot < 0.01) lot = 0.01;
+  return { label: 'Suggested Lot', val: lot.toFixed(2) + ' lots', rawLot: lot, isCrypto: false, riskDollar: riskAmt };
+}
+
+// ============================================================
+// PnL CALCULATION (Manual Status Based)
+// ============================================================
+function calculatePnLByStatus(signal) {
+  const status = (signal.roadmapStatus || 'ENTRY TRIGGERED').toUpperCase();
+  const entry = parseFloat(signal.entry);
+  const sl = parseFloat(signal.sl);
+  const tp1 = parseFloat(signal.tp1);
+  const tp2 = signal.tp2 ? parseFloat(signal.tp2) : null;
+  const tp3 = signal.tp3 ? parseFloat(signal.tp3) : null;
+
+  const riskDollar = signal.riskDollarSnapshot || 10;
+  const mult = signal.multiplierSnapshot || 100;
+  const slDist = Math.abs(entry - sl) || 1;
+  const lot = riskDollar / (slDist * mult);
+
+  const dist1 = Math.abs(tp1 - entry) * lot * mult;
+  const dist2 = tp2 ? Math.abs(tp2 - entry) * lot * mult : 0;
+  const dist3 = tp3 ? Math.abs(tp3 - entry) * lot * mult : 0;
+
+  const hasTP2 = !!tp2;
+  const hasTP3 = !!tp3;
+
+  let p1 = 0, p2 = 0, p3 = 0;
+  if (!hasTP2) { p1 = 100; }
+  else if (!hasTP3) { p1 = 50; p2 = 50; }
+  else { p1 = 35; p2 = 35; p3 = 30; }
+
+  const tp1Profit = dist1 * (p1 / 100);
+  const tp2Profit = dist2 * (p2 / 100);
+  const tp3Profit = dist3 * (p3 / 100);
+
+  const isSLHit = status.includes('SL HIT');
+  const isBEHit = status.includes('BE HIT');
+  const isTP3Hit = status.includes('TP3 HIT') || status.includes('TP 3 HIT');
+  const isTP2Hit = (status.includes('TP2 HIT') || status.includes('TP 2 HIT')) && !isTP3Hit;
+  const isTP1Hit = (status.includes('TP1 HIT') || status.includes('TP 1 HIT')) && !isTP2Hit && !isTP3Hit;
+
+  if (isSLHit) {
+    let booked = 0;
+    if (status.includes('AFTER TP2')) booked = tp1Profit + tp2Profit;
+    else if (status.includes('AFTER TP1')) booked = tp1Profit;
+    const pnl = booked - riskDollar;
+    return { pnl, type: pnl >= 0 ? 'win' : 'loss', label: 'SL Hit' };
+  }
+
+  if (isBEHit) {
+    let booked = 0;
+    if (status.includes('AFTER TP2')) booked = tp1Profit + tp2Profit;
+    else if (status.includes('AFTER TP1')) booked = tp1Profit;
+    return { pnl: booked, type: booked > 0 ? 'win' : 'be', label: 'Break Even' };
+  }
+
+  if (isTP3Hit) {
+    const pnl = tp1Profit + tp2Profit + tp3Profit;
+    return { pnl, type: 'win', label: 'TP3 Hit' };
+  }
+  if (isTP2Hit) {
+    const pnl = tp1Profit + tp2Profit;
+    return { pnl, type: 'win', label: 'TP2 Hit' };
+  }
+  if (isTP1Hit) {
+    return { pnl: tp1Profit, type: 'win', label: 'TP1 Hit' };
+  }
+
+  return { pnl: 0, type: 'neutral', label: 'Open' };
+}
+
+// ============================================================
+// PERFORMANCE STATS
+// ============================================================
+function updateSettingsPerformanceStats() {
+  const pktMidnight = getPktMidnightTimestamp();
+  const todayTrades = signalsCache.filter(s => {
+    if (!s.createdAt) return false;
+    const sTime = s.createdAt.toMillis ? s.createdAt.toMillis() : new Date(s.createdAt).getTime();
+    return sTime >= pktMidnight;
+  });
+
+  let totalTrades = todayTrades.length;
+  let beCount = 0;
+  let profitDollar = 0;
+  let lossDollar = 0;
+
+  todayTrades.forEach(s => {
+    const r = calculatePnLByStatus(s);
+    const status = (s.roadmapStatus || '').toUpperCase();
+    if (status.includes('BE HIT')) beCount++;
+    if (r.pnl > 0) profitDollar += r.pnl;
+    else if (r.pnl < 0) lossDollar += Math.abs(r.pnl);
+  });
+
+  const netDollar = profitDollar - lossDollar;
+  const stTotal = document.getElementById('statTodayTrades');
+  if(stTotal) stTotal.textContent = totalTrades;
+  const stBE = document.getElementById('statTodayBE');
+  if(stBE) stBE.textContent = beCount;
+  const stProf = document.getElementById('statTodayProfit');
+  if(stProf) stProf.textContent = `+$${profitDollar.toFixed(2)}`;
+  const stLoss = document.getElementById('statTodayLoss');
+  if(stLoss) stLoss.textContent = `-$${lossDollar.toFixed(2)}`;
+  const netEl = document.getElementById('statTodayNet');
+  if(netEl) {
+    netEl.textContent = `${netDollar >= 0 ? '+' : ''}$${netDollar.toFixed(2)}`;
+    netEl.className = `stat-card-val ${netDollar > 0 ? 'win' : (netDollar < 0 ? 'loss' : 'neutral')}`;
+  }
+}
+
+// ============================================================
+// THEME & APPEARANCE
+// ============================================================
+function initTheme() {
+  const savedTheme = localStorage.getItem('hk_theme') || 'dark';
+  const savedAccent = localStorage.getItem('hk_accent') || 'gold';
+  const savedFont = localStorage.getItem('hk_font') || 'medium';
+  const savedCard = localStorage.getItem('hk_card') || 'comfortable';
+
+  document.body.classList.toggle('light-theme', savedTheme === 'light');
+  const themeBtn = document.getElementById('themeToggleBtn');
+  if (themeBtn) themeBtn.innerHTML = savedTheme === 'light' ? '&#9790;' : '&#9788;';
+
+  applyAccent(savedAccent);
+  applyFontSize(savedFont);
+  applyCardStyle(savedCard);
+  updateAppearanceButtons();
+}
+
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light-theme');
+  localStorage.setItem('hk_theme', isLight ? 'light' : 'dark');
+  const themeBtn = document.getElementById('themeToggleBtn');
+  if (themeBtn) themeBtn.innerHTML = isLight ? '&#9790;' : '&#9788;';
+}
+
+function applyAccent(accent) {
+  document.body.classList.remove('accent-blue','accent-green','accent-purple','accent-red');
+  if (accent !== 'gold') document.body.classList.add('accent-' + accent);
+}
+function applyFontSize(size) {
+  document.body.classList.remove('font-small','font-medium','font-large');
+  document.body.classList.add('font-' + size);
+}
+function applyCardStyle(style) {
+  document.body.classList.remove('card-compact','card-comfortable');
+  document.body.classList.add('card-' + style);
+}
+
+function setAccent(accent) {
+  localStorage.setItem('hk_accent', accent);
+  applyAccent(accent);
+  updateAppearanceButtons();
+}
+function setFontSize(size) {
+  localStorage.setItem('hk_font', size);
+  applyFontSize(size);
+  updateAppearanceButtons();
+}
+function setCardStyle(style) {
+  localStorage.setItem('hk_card', style);
+  applyCardStyle(style);
+  updateAppearanceButtons();
+}
+
+function updateAppearanceButtons() {
+  const accent = localStorage.getItem('hk_accent') || 'gold';
+  const font = localStorage.getItem('hk_font') || 'medium';
+  const card = localStorage.getItem('hk_card') || 'comfortable';
+
+  document.querySelectorAll('#accentOptions .appearance-opt').forEach(btn => {
+    const match = btn.className.includes('color-' + accent);
+    btn.classList.toggle('active', match);
+  });
+  document.querySelectorAll('#fontOptions .appearance-opt').forEach((btn, idx) => {
+    const sizes = ['small','medium','large'];
+    btn.classList.toggle('active', sizes[idx] === font);
+  });
+  document.querySelectorAll('#cardOptions .appearance-opt').forEach((btn, idx) => {
+    const styles = ['compact','comfortable'];
+    btn.classList.toggle('active', styles[idx] === card);
+  });
+}
+
+initTheme();
+
+// ============================================================
+// TABS / VIEWS
+// ============================================================
+function switchMarketTab(market) {
+  activeMarketTab = market;
+  document.getElementById('tab-forex').classList.toggle('active', market === 'FOREX');
+  document.getElementById('tab-crypto').classList.toggle('active', market === 'CRYPTO');
+  document.getElementById('feedSectionTitle').textContent = market === 'FOREX' ? 'Forex & Indices Signals' : 'Crypto Futures Signals';
+  renderMemberFeed();
+}
+
+function switchView(view){
+  document.getElementById('memberView').classList.toggle('hidden', view !== 'member');
+  document.getElementById('adminView').classList.toggle('hidden', view !== 'admin');
+  document.getElementById('btn-member').classList.toggle('active', view === 'member');
+  document.getElementById('btn-admin').classList.toggle('active', view === 'admin');
+}
+
+function toggleSettings(show){
+  const modal = document.getElementById('settingsModal');
+  if(show){
+    updateSettingsPerformanceStats();
+    modal.classList.add('open');
+  } else {
+    modal.classList.remove('open');
+  }
+}
+
+// ============================================================
+// RISK SETTINGS
+// ============================================================
+function saveRiskSettings(){
+  const bal = parseFloat(document.getElementById('settBalance').value) || 0;
+  const riskAmt = parseFloat(document.getElementById('settRiskAmount').value) || 0;
+  localStorage.setItem('hk_balance', bal);
+  localStorage.setItem('hk_risk_amt', riskAmt);
+
+  const summary = document.getElementById('riskCalcSummary');
+  if(bal > 0 && riskAmt > 0){
+    const pct = ((riskAmt / bal) * 100).toFixed(1);
+    summary.textContent = `Allocating $${riskAmt} (${pct}%) risk per signal setup.`;
+  } else {
+    summary.textContent = 'Set both fields to enable automatic lot & PnL calculation.';
+  }
+  renderMemberFeed();
+  updateSettingsPerformanceStats();
+}
+
+// ============================================================
+// AUTO DIRECTION DETECT
+// ============================================================
+function onPairInput() {
+  const pair = document.getElementById('a-pair').value.trim().toUpperCase();
+  const dirSelect = document.getElementById('a-dir');
+  const info = document.getElementById('autoDetectInfo');
+
+  if (!pair) {
+    dirSelect.innerHTML = '<option value="">-- Select Direction --</option>';
+    info.textContent = '';
+    return;
+  }
+
+  const market = resolveMarket(pair);
+  // Rebuild dropdown based on market
+  dirSelect.innerHTML = market === 'CRYPTO'
+    ? `<option value="">-- Select Direction --</option>
+       <option value="LONG">LONG</option>
+       <option value="SHORT">SHORT</option>
+       <option value="LONG LIMIT">LONG LIMIT</option>
+       <option value="SHORT LIMIT">SHORT LIMIT</option>`
+    : `<option value="">-- Select Direction --</option>
+       <option value="BUY">BUY</option>
+       <option value="SELL">SELL</option>
+       <option value="BUY LIMIT">BUY LIMIT</option>
+       <option value="SELL LIMIT">SELL LIMIT</option>`;
+
+  info.textContent = `Detected market: ${market}`;
+
+  // Try auto-detect direction from entry/sl/tp1
+  autoDetectDirection();
+}
+
+function autoDetectDirection() {
+  const entry = parseFloat(document.getElementById('a-entry').value);
+  const sl = parseFloat(document.getElementById('a-sl').value);
+  const tp1 = parseFloat(document.getElementById('a-tp1').value);
+  const pair = document.getElementById('a-pair').value.trim().toUpperCase();
+  const dirSelect = document.getElementById('a-dir');
+  const info = document.getElementById('autoDetectInfo');
+
+  if (!pair || isNaN(entry) || isNaN(sl) || isNaN(tp1)) return;
+
+  const market = resolveMarket(pair);
+  const isBuySetup = tp1 > entry && sl < entry;
+  const isSellSetup = tp1 < entry && sl > entry;
+
+  let detected = '';
+  let limitDetected = '';
+
+  if (isBuySetup) {
+    detected = market === 'CRYPTO' ? 'LONG' : 'BUY';
+  } else if (isSellSetup) {
+    detected = market === 'CRYPTO' ? 'SHORT' : 'SELL';
+  }
+
+  if (detected) {
+    // Auto-select the base direction, but keep LIMIT as user choice
+    const currentVal = dirSelect.value;
+    if (!currentVal || !currentVal.includes('LIMIT')) {
+      dirSelect.value = detected;
+    }
+    info.textContent = `Detected market: ${market} — Auto direction: ${detected} (can change to LIMIT if pending)`;
+    info.style.color = 'var(--green)';
+  } else {
+    info.textContent = `Detected market: ${market} — Direction unclear (check entry/SL/TP values)`;
+    info.style.color = 'var(--ink-dim)';
+  }
+}
+
+// Attach listeners for auto-detect
+['a-entry','a-sl','a-tp1'].forEach(id => {
+  document.addEventListener('DOMContentLoaded', () => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', autoDetectDirection);
+  });
+});
+
+// ============================================================
+// QUICK PASTE PARSER
+// ============================================================
+async function parseRawSignalText() {
+  const raw = document.getElementById('quickRawText').value;
+  if(!raw.trim()) return alert('Please paste signal text first!');
+  const text = raw.toUpperCase();
+
+  let foundPair = '';
+  if (text.includes('NAS') || text.includes('US100') || text.includes('NASDAQ') || text.includes('USTEC')) {
+    foundPair = 'US100USD';
+  } else if (text.includes('US30') || text.includes('DJI')) {
+    foundPair = 'US30USD';
+  } else if (text.includes('XAU') || text.includes('GOLD')) {
+    foundPair = 'XAUUSD';
+  } else if (text.includes('USDT')) {
+    const matchC = text.match(/([A-Z]{3,6})USDT/);
+    foundPair = matchC ? matchC[1] + 'USDT' : 'BTCUSDT';
+  } else {
+    const matchP = text.match(/([A-Z]{3,6})[\/\-]?([A-Z]{3,4})?/);
+    if (matchP) {
+      let base = matchP[1];
+      let quote = matchP[2] || 'USD';
+      foundPair = (base + quote);
+      if (!foundPair.endsWith('USDT') && !foundPair.endsWith('USD')) foundPair += 'USD';
+    } else {
+      foundPair = 'EURUSD';
+    }
+  }
+  if (foundPair.length < 5) return alert('Invalid or incomplete asset name detected!');
+  document.getElementById('a-pair').value = foundPair;
+  onPairInput();
+
+  const numMatches = text.match(/\d+(?:\.\d+)?/g);
+  if (numMatches && numMatches.length >= 2) {
+    const nums = numMatches.map(Number).filter(n => n > 0);
+    if (nums.length >= 3) {
+      if (!document.getElementById('a-entry').value) document.getElementById('a-entry').value = nums[0];
+      if (!document.getElementById('a-sl').value) document.getElementById('a-sl').value = nums[1];
+      if (!document.getElementById('a-tp1').value) document.getElementById('a-tp1').value = nums[2];
+      if (nums[3] && !document.getElementById('a-tp2').value) document.getElementById('a-tp2').value = nums[3];
+      if (nums[4] && !document.getElementById('a-tp3').value) document.getElementById('a-tp3').value = nums[4];
+    }
+  }
+  autoDetectDirection();
+  alert('Signal parsed successfully. Please verify the fields.');
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+function toggleAuthMode(){
+  authMode = authMode === 'login' ? 'signup' : 'login';
+  document.getElementById('authTitle').textContent = authMode === 'login' ? 'Sign In' : 'Register Account';
+  document.getElementById('authSubtitle').textContent = authMode === 'login' ? 'TW-HK Live Signals App' : 'Create your portal account';
+  document.getElementById('authSubmit').textContent = authMode === 'login' ? 'Sign In' : 'Create Account';
+  document.getElementById('a-name').classList.toggle('hidden', authMode !== 'signup');
+  document.getElementById('authErr').textContent = '';
+}
+
+async function handleAuthSubmit(){
+  const email = document.getElementById('a-email').value.trim();
+  const pass = document.getElementById('a-pass').value;
+  const errBox = document.getElementById('authErr');
+  errBox.textContent = '';
+  if(!email || !pass){ errBox.textContent = 'Please enter both email and password'; return; }
+
+  try{
+    if(authMode === 'login'){
+      await auth.signInWithEmailAndPassword(email, pass);
+    } else {
+      const name = document.getElementById('a-name').value.trim() || 'Trader';
+      const cred = await auth.createUserWithEmailAndPassword(email, pass);
+      await db.collection('members').doc(cred.user.uid).set({
+        name, email, tier: 'FREE', role: 'member',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+  } catch(e){ errBox.textContent = e.message; }
+}
+
+function doLogout(){
+  toggleSettings(false);
+  Object.keys(activeCommentsListeners).forEach(id => {
+    try { activeCommentsListeners[id](); } catch(e){}
+    delete activeCommentsListeners[id];
+  });
+  auth.signOut();
+}
+
+auth.onAuthStateChanged(async (user) => {
+  const overlay = document.getElementById('loginOverlay');
+  if(user){
+    currentUid = user.uid;
+    const doc = await db.collection('members').doc(user.uid).get();
+    currentMemberDoc = doc.exists ? doc.data() : { name: user.email, email: user.email, tier: 'FREE', role: 'member' };
+
+    overlay.classList.remove('open');
+    document.getElementById('appBox').classList.remove('hidden');
+    document.getElementById('openSettingsBtn').classList.remove('hidden');
+
+    document.getElementById('settUserName').textContent = currentMemberDoc.name || 'Trader';
+    document.getElementById('settUserEmail').textContent = currentMemberDoc.email || user.email;
+    document.getElementById('settUserTier').textContent = (currentMemberDoc.tier || 'FREE');
+    document.getElementById('viewToggle').classList.toggle('hidden', currentMemberDoc.role !== 'admin');
+
+    // Show/hide admin-only risk section
+    const riskSection = document.getElementById('riskSection');
+    if (riskSection) riskSection.classList.toggle('hidden', currentMemberDoc.role !== 'admin');
+
+    const savedBal = localStorage.getItem('hk_balance');
+    const savedRiskAmt = localStorage.getItem('hk_risk_amt');
+    if(savedBal) document.getElementById('settBalance').value = savedBal;
+    if(savedRiskAmt) document.getElementById('settRiskAmount').value = savedRiskAmt;
+
+    saveRiskSettings();
+    listenSignals();
+    if(currentMemberDoc.role === 'admin') listenMembers();
+  } else {
+    overlay.classList.add('open');
+    document.getElementById('appBox').classList.add('hidden');
+    document.getElementById('openSettingsBtn').classList.add('hidden');
+  }
+});
+
+// ============================================================
+// ACCESS CONTROL
+// ============================================================
+function hasMarketAccess(market, isAdmin) {
+  if (isAdmin) return true;
+  if (!currentMemberDoc) return false;
+  const userTier = currentMemberDoc.tier || 'FREE';
+  if (userTier === 'ALL_VIP') return true;
+  if (market === 'FOREX' && userTier === 'FOREX_VIP') return true;
+  if (market === 'CRYPTO' && userTier === 'CRYPTO_VIP') return true;
+  return false;
+}
+
+// ============================================================
+// RR CALC
+// ============================================================
+function calculateRR(entry, sl, tp) {
+  const risk = Math.abs(entry - sl);
+  const reward = Math.abs(tp - entry);
+  if (!risk || !reward) return { ratio: '1:1', riskPct: 50, rewardPct: 50 };
+  const r = (reward / risk).toFixed(1);
+  const riskShare = Math.round((risk / (risk + reward)) * 100);
+  const rewardShare = 100 - riskShare;
+  return { ratio: `1:${r}`, riskPct: riskShare, rewardPct: rewardShare };
+}
+
+// ============================================================
+// FEED CARD
+// ============================================================
+function feedCard(s, isAdmin){
+  const market = resolveMarket(s);
+  const isUnlocked = hasMarketAccess(market, isAdmin);
+  const val = (v) => isUnlocked ? v : `<span class="locked-val">${v}</span>`;
+
+  const e = parseFloat(s.entry), sl = parseFloat(s.sl), tp = parseFloat(s.tp1);
+  const rr = calculateRR(e, sl, tp);
+  const extraTps = [s.tp2, s.tp3].filter(Boolean);
+  const autoLot = isUnlocked ? computeLotSize(s) : null;
+
+  const status = (s.roadmapStatus || 'ENTRY TRIGGERED');
+  const statusUpper = status.toUpperCase();
+  const code = s.tradeCode || ('#HK-' + s.id.slice(-3).toUpperCase());
+  const dateFormatted = formatPktDateTime(s.createdAt);
+  const dc = dirClass(s.dir);
+
+  let statusClass = '';
+  if(statusUpper.includes('WAITING') || statusUpper.includes('PENDING')) statusClass = 'pending';
+  if(statusUpper.includes('BE HIT')) statusClass = 'be';
+  if(statusUpper.includes('TP1 HIT') || statusUpper.includes('TP2 HIT') || statusUpper.includes('TP3 HIT')) statusClass = 'tp';
+  if(statusUpper.includes('SL HIT')) statusClass = 'sl';
+
+  const isClosedTrade = statusUpper.includes('SL HIT') || statusUpper.includes('TP3 HIT') || statusUpper.includes('TP 3');
+
+  const pnlResult = calculatePnLByStatus(s);
+  let pnlDisplayHTML = '';
+  if (isUnlocked) {
+    if (pnlResult.type === 'win') {
+      pnlDisplayHTML = `<span class="value win">+$${pnlResult.pnl.toFixed(2)}</span>`;
+    } else if (pnlResult.type === 'loss') {
+      pnlDisplayHTML = `<span class="value loss">-$${Math.abs(pnlResult.pnl).toFixed(2)}</span>`;
+    } else if (pnlResult.type === 'be') {
+      pnlDisplayHTML = `<span class="value be">$0.00 (BE)</span>`;
+    } else {
+      pnlDisplayHTML = `<span class="value neutral">Pending</span>`;
+    }
+  } else {
+    pnlDisplayHTML = `<span class="locked-val">$0.00</span>`;
+  }
+
+  // ADMIN ACTION BUTTONS
+  let adminActionsHTML = '';
+  if (isAdmin) {
+    const st = statusUpper;
+    const hasTP2 = !!s.tp2;
+    const hasTP3 = !!s.tp3;
+
+    const isEntryDone = !st.includes('WAITING') && !st.includes('PENDING');
+    const isBEDone = st.includes('BE HIT');
+    const isTP1Done = st.includes('TP1 HIT') || st.includes('TP2 HIT') || st.includes('TP3 HIT');
+    const isTP2Done = st.includes('TP2 HIT') || st.includes('TP3 HIT');
+    const isTP3Done = st.includes('TP3 HIT');
+    const isSLDone = st.includes('SL HIT');
+    const isClosed = isTP3Done || isSLDone || st.includes('TP1 HIT') && !hasTP2;
+
+    adminActionsHTML = `
+      <div class="admin-status-actions">
+        <button class="status-btn entry full-row ${isEntryDone?'active':''}"
+          onclick="adminUpdateStatus('${s.id}','ENTRY TRIGGERED')"
+          ${isClosed?'disabled':''}>
+          ${isEntryDone?'[done] ':''}Entry Triggered
+        </button>
+        <button class="status-btn be" onclick="adminUpdateStatus('${s.id}','BE HIT')"
+          ${(!isEntryDone || isBEDone || isClosed)?'disabled':''}>
+          ${isBEDone?'[done] ':''}BE Hit
+        </button>
+        <button class="status-btn tp" onclick="adminUpdateStatus('${s.id}','TP1 HIT')"
+          ${(!isEntryDone || isTP1Done || isClosed)?'disabled':''}>
+          ${isTP1Done?'[done] ':''}TP1 Hit
+        </button>
+        <button class="status-btn tp" onclick="adminUpdateStatus('${s.id}','TP2 HIT')"
+          ${(!hasTP2 || !isTP1Done || isTP2Done || isClosed)?'disabled':''}>
+          ${isTP2Done?'[done] ':''}TP2 Hit
+        </button>
+        <button class="status-btn tp" onclick="adminUpdateStatus('${s.id}','TP3 HIT')"
+          ${(!hasTP3 || !isTP2Done || isTP3Done || isClosed)?'disabled':''}>
+          ${isTP3Done?'[done] ':''}TP3 Hit
+        </button>
+        <button class="status-btn sl full-row" onclick="adminUpdateStatus('${s.id}','SL HIT')"
+          ${isClosed?'disabled':''}>
+          ${isSLDone?'[done] ':''}SL Hit
+        </button>
+      </div>`;
+  }
+
+  return `
+    <div class="feed-item market-${market}">
+      <div class="feed-top">
+        <div class="feed-pair">${escapeHtml(s.pair)} <span class="market-badge ${market}">${market}</span></div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="trade-code">${escapeHtml(code)}</span>
+          <span class="feed-dir ${dc}">${escapeHtml(s.dir)}</span>
+        </div>
+      </div>
+
+      <div class="roadmap-badge ${statusClass}">
+        <span>Status: <b>${escapeHtml(status)}</b></span>
+        <span style="font-size:10px;opacity:0.8">${escapeHtml(code)}</span>
+      </div>
+
+      <div class="pnl-box">
+        <span class="label">Booked PnL</span>
+        ${pnlDisplayHTML}
+      </div>
+
+      <div class="rr-visual">
+        <div class="rr-meta">
+          <span style="color:var(--red)">Risk: 1.0</span>
+          <span style="color:var(--green)">Target R:R ${rr.ratio}</span>
+        </div>
+        <div class="rr-track">
+          <div class="rr-risk" style="width:${rr.riskPct}%"></div>
+          <div class="rr-reward" style="width:${rr.rewardPct}%"></div>
+        </div>
+      </div>
+
+      <div class="feed-levels">
+        <div><span class="k">Entry</span><span class="v-entry">${val(formatPrice(s.entry))}</span></div>
+        <div><span class="k">Stop Loss</span><span class="v-sl">${val(formatPrice(s.sl))}</span></div>
+        <div><span class="k">Target 1</span><span class="v-tp">${val(formatPrice(s.tp1))}</span></div>
+      </div>
+
+      ${extraTps.length ? `
+      <div class="feed-levels" style="margin-top:6px;grid-template-columns:repeat(${extraTps.length},1fr);">
+        ${s.tp2 ? `<div><span class="k">Target 2</span><span class="v-tp">${val(formatPrice(s.tp2))}</span></div>` : ''}
+        ${s.tp3 ? `<div><span class="k">Target 3</span><span class="v-tp">${val(formatPrice(s.tp3))}</span></div>` : ''}
+      </div>` : ''}
+
+      ${!isUnlocked ? `
+        <div class="upgrade-note ${market === 'CRYPTO' ? 'crypto' : ''}">
+          ${market} Access Protected — Upgrade to Premium
+        </div>` : ''}
+
+      <div class="card-footer-info">
+        <span>${autoLot ? `${autoLot.label}: <b class="auto-lot-text">${autoLot.val}</b>` : 'Trading Terminal'}</span>
+        <span>${escapeHtml(dateFormatted) || 'Just Now'}</span>
+      </div>
+
+      ${s.result ? `<div class="result-badge ${s.result}">${s.result}</div>` : ''}
+
+      <button class="whatsapp-share-btn" onclick="quickShareSignal('${s.id}')">
+        Share on WhatsApp
+      </button>
+
+      ${!isClosedTrade ? `
+      <div class="chat-box-card">
+        <button class="chat-toggle-btn" onclick="toggleChatBox('${s.id}')">
+          <span>Trade Discussion &amp; Updates</span>
+          <span style="font-size:10px;">Chat</span>
+        </button>
+        <div id="chat-panel-${s.id}" class="chat-panel hidden">
+          <div id="chat-msgs-${s.id}" class="chat-messages">
+            <div style="color:var(--ink-dim);font-size:11px;text-align:center;padding:8px 0;">No comments yet.</div>
+          </div>
+          <div class="chat-input-row">
+            <input type="text" id="chat-input-${s.id}" placeholder="Write update..." onkeydown="if(event.key==='Enter') sendComment('${s.id}')">
+            <button class="chat-send-btn" onclick="sendComment('${s.id}')">Send</button>
+          </div>
+        </div>
+      </div>` : ''}
+
+      ${adminActionsHTML}
+
+      ${isAdmin ? `<button class="btn-del" onclick="deleteSignal('${s.id}')">Delete Signal</button>` : ''}
+    </div>`;
+}
+
+// ============================================================
+// WHATSAPP MESSAGE FORMAT
+// ============================================================
+function buildWhatsAppMessage(code, status) {
+  // Normalize status labels for WhatsApp
+  const map = {
+    'ENTRY TRIGGERED': 'Entry Triggered',
+    'BE HIT': 'BE Hit',
+    'TP1 HIT': 'TP1 Done',
+    'TP2 HIT': 'TP2 Done',
+    'TP3 HIT': 'TP3 Done 100% Booked',
+    'SL HIT': 'SL Hit',
+    'WAITING ENTRY': 'Waiting Entry'
+  };
+  const label = map[status.toUpperCase()] || status;
+  return `(${code}) ${label}`;
+}
+
+function quickShareSignal(signalId) {
+  const s = signalsCache.find(x => x.id === signalId);
+  if (!s) return;
+  const code = s.tradeCode || ('#HK-' + s.id.slice(-3).toUpperCase());
+  const status = s.roadmapStatus || 'ENTRY TRIGGERED';
+  const msg = buildWhatsAppMessage(code, status);
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+// ============================================================
+// ADMIN STATUS UPDATE + WHATSAPP POPUP
+// ============================================================
+async function adminUpdateStatus(signalId, newStatus) {
+  if (!currentMemberDoc || currentMemberDoc.role !== 'admin') {
+    return alert('Only admin can update status.');
+  }
+  const signal = signalsCache.find(s => s.id === signalId);
+  if (!signal) return alert('Signal not found.');
+
+  if (!confirm(`Mark this trade as: "${newStatus}"?`)) return;
+
+  const payload = { roadmapStatus: newStatus };
+  if (newStatus === 'SL HIT') payload.result = 'LOSS';
+  else if (newStatus === 'TP3 HIT') payload.result = 'WIN';
+  else if (newStatus === 'TP1 HIT' && !signal.tp2) payload.result = 'WIN';
+
+  try {
+    await db.collection('signals').doc(signalId).update(payload);
+    // Show WhatsApp popup
+    const code = signal.tradeCode || ('#HK-' + signal.id.slice(-3).toUpperCase());
+    pendingWaMessage = buildWhatsAppMessage(code, newStatus);
+    document.getElementById('waMessage').textContent = pendingWaMessage;
+    document.getElementById('waOverlay').classList.add('open');
+  } catch (e) {
+    console.error('Status update failed:', e);
+    alert('Failed to update status: ' + e.message);
+  }
+}
+
+function confirmWhatsAppShare() {
+  if (pendingWaMessage) {
+    window.open('https://wa.me/?text=' + encodeURIComponent(pendingWaMessage), '_blank');
+  }
+  closeWaPopup();
+}
+
+function closeWaPopup() {
+  document.getElementById('waOverlay').classList.remove('open');
+  pendingWaMessage = '';
+}
+
+// ============================================================
+// CHAT
+// ============================================================
+function toggleChatBox(signalId) {
+  const panel = document.getElementById(`chat-panel-${signalId}`);
+  if (!panel) return;
+  const isHidden = panel.classList.contains('hidden');
+
+  if (isHidden) {
+    panel.classList.remove('hidden');
+    if (!activeCommentsListeners[signalId]) {
+      activeCommentsListeners[signalId] = db.collection('signals').doc(signalId)
+        .collection('comments').orderBy('createdAt', 'asc').limit(30)
+        .onSnapshot(snap => {
+          const box = document.getElementById(`chat-msgs-${signalId}`);
+          if (!box) return;
+          if (snap.empty) {
+            box.innerHTML = '<div style="color:var(--ink-dim);font-size:11px;text-align:center;padding:8px 0;">No comments yet.</div>';
+            return;
+          }
+          box.innerHTML = snap.docs.map(d => {
+            const m = d.data();
+            const time = m.createdAt ? formatPktDateTime(m.createdAt) : '';
+            return `
+              <div class="chat-msg-row">
+                <div class="chat-msg-top">
+                  <span class="chat-msg-author ${m.role === 'admin' ? 'admin' : ''}">
+                    ${escapeHtml(m.name || 'Trader')} ${m.role === 'admin' ? '(Admin)' : ''}
+                  </span>
+                  <span>${escapeHtml(time)}</span>
+                </div>
+                <div class="chat-msg-text">${escapeHtml(m.text || '')}</div>
+              </div>`;
+          }).join('');
+          box.scrollTop = box.scrollHeight;
+        });
+    }
+  } else {
+    panel.classList.add('hidden');
+    if (activeCommentsListeners[signalId]) {
+      activeCommentsListeners[signalId]();
+      delete activeCommentsListeners[signalId];
+    }
+  }
+}
+
+async function sendComment(signalId) {
+  const input = document.getElementById(`chat-input-${signalId}`);
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  const senderName = currentMemberDoc ? (currentMemberDoc.name || 'Trader') : 'Trader';
+  const senderRole = currentMemberDoc ? (currentMemberDoc.role || 'member') : 'member';
+  input.value = '';
+  try {
+    await db.collection('signals').doc(signalId).collection('comments').add({
+      name: senderName, role: senderRole, text: text,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(e) {
+    alert('Failed to send comment: ' + e.message);
+  }
+}
+
+// ============================================================
+// RENDER FEED
+// ============================================================
+function renderMemberFeed() {
+  const pktMidnight = getPktMidnightTimestamp();
+
+  const filtered = signalsCache.filter(s => {
+    const market = resolveMarket(s);
+    if (market !== activeMarketTab) return false;
+
+    const status = (s.roadmapStatus || '').toUpperCase();
+    const isClosed = status.includes('SL HIT') || status.includes('TP3 HIT') || status.includes('TP1 HIT') && !s.tp2;
+
+    if (!isClosed) return true;
+    if (s.createdAt) {
+      const sTime = s.createdAt.toMillis ? s.createdAt.toMillis() : new Date(s.createdAt).getTime();
+      return sTime >= pktMidnight;
+    }
+    return true;
+  });
+
+  const html = filtered.length ? filtered.map(s => feedCard(s, false)).join('') : `<div class="empty">No active ${activeMarketTab} setups currently running</div>`;
+  const el = document.getElementById('memberFeed');
+  if (el) el.innerHTML = html;
+}
+
+function listenSignals(){
+  db.collection('signals').orderBy('createdAt','desc').limit(60)
+    .onSnapshot(snap => {
+      signalsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderMemberFeed();
+      updateSettingsPerformanceStats();
+      if(currentMemberDoc && currentMemberDoc.role === 'admin'){
+        const adEl = document.getElementById('adminFeed');
+        if (adEl) adEl.innerHTML = signalsCache.map(s => feedCard(s, true)).join('');
+      }
+    }, err => {
+      console.error('Signals listener error:', err);
+    });
+}
+
+// ============================================================
+// POST SIGNAL
+// ============================================================
+async function postSignal(){
+  if (!currentMemberDoc || currentMemberDoc.role !== 'admin') {
+    return alert('Only admin can publish signals.');
+  }
+
+  const pair = document.getElementById('a-pair').value.trim().toUpperCase();
+  const dir = document.getElementById('a-dir').value;
+  const entryInput = document.getElementById('a-entry').value.trim();
+  const sl = document.getElementById('a-sl').value;
+  const tp1 = document.getElementById('a-tp1').value;
+  const tp2 = document.getElementById('a-tp2').value;
+  const tp3 = document.getElementById('a-tp3').value;
+
+  if(!pair || !dir || !entryInput || !sl || !tp1) {
+    return alert('Please fill: Asset, Direction, Entry, Stop Loss, Take Profit 1');
+  }
+
+  const market = resolveMarket(pair);
+  const cleanKey = normalizePair(pair, market);
+  const entry = parseFloat(entryInput);
+  if (isNaN(entry)) return alert('Invalid entry price');
+
+  const isLimit = dir.includes('LIMIT');
+  const initialStatus = isLimit ? 'WAITING ENTRY' : 'ENTRY TRIGGERED';
+
+  const { riskAmt } = getRiskSettings();
+  const mult = getMultiplier(cleanKey, market);
+
+  const btn = document.getElementById('btnPublish');
+  btn.disabled = true;
+  btn.textContent = 'Publishing...';
+
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  let randStr = '';
+  for (let i = 0; i < 3; i++) randStr += chars.charAt(Math.floor(Math.random() * chars.length));
+  const tradeCode = 'TW-HK-' + randStr;
+
+  const signalObj = {
+    tradeCode, pair, market, dir,
+    entry: entry.toString(),
+    sl: sl.toString(),
+    tp1: tp1.toString(),
+    tp2: tp2 ? tp2.toString() : null,
+    tp3: tp3 ? tp3.toString() : null,
+    tag: 'PREMIUM',
+    roadmapStatus: initialStatus,
+    result: null,
+    riskDollarSnapshot: riskAmt,
+    multiplierSnapshot: mult,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  try {
+    await db.collection('signals').add(signalObj);
+
+    // Reset form
+    document.getElementById('a-pair').value = '';
+    document.getElementById('a-entry').value = '';
+    document.getElementById('a-sl').value = '';
+    document.getElementById('a-tp1').value = '';
+    document.getElementById('a-tp2').value = '';
+    document.getElementById('a-tp3').value = '';
+    document.getElementById('quickRawText').value = '';
+    document.getElementById('autoDetectInfo').textContent = '';
+    document.getElementById('a-dir').innerHTML = '<option value="">-- Select Direction --</option>';
+
+  } catch(e) {
+    console.error('Signal publish failed:', e);
+    alert('Failed to publish signal: ' + (e.message || 'Unknown error'));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Publish Signal';
+  }
+}
+
+// ============================================================
+// DELETE
+// ============================================================
+async function deleteSignal(id){
+  if (!currentMemberDoc || currentMemberDoc.role !== 'admin') return;
+  if(confirm('Permanently delete this setup?')) {
+    try {
+      await db.collection('signals').doc(id).delete();
+      updateSettingsPerformanceStats();
+    } catch(e) {
+      alert('Delete failed: ' + e.message);
+    }
+  }
+}
+
+// ============================================================
+// MEMBERS
+// ============================================================
+function listenMembers(){
+  db.collection('members').orderBy('createdAt','desc').onSnapshot(snap => {
+    const members = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+    const el = document.getElementById('membersList');
+    if (!el) return;
+    el.innerHTML = members.map(m => `
+      <div class="member-row">
+        <div class="member-row-top">
+          <div><b>${escapeHtml(m.name || 'Trader')}</b> <span style="font-size:10px;color:var(--ink-dim);">(${escapeHtml(m.email || '')})</span></div>
+          ${m.role === 'admin' ? '<span style="color:var(--accent);font-weight:700;font-size:10px;">ADMIN</span>' : ''}
+        </div>
+        ${m.role !== 'admin' ? `
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span style="font-size:11px;color:var(--ink-dim);">Access Plan:</span>
+          <select class="tier-select" onchange="updateMemberTier('${m.uid}', this.value)">
+            <option value="FREE" ${(!m.tier || m.tier === 'FREE') ? 'selected' : ''}>FREE</option>
+            <option value="FOREX_VIP" ${m.tier === 'FOREX_VIP' ? 'selected' : ''}>FOREX VIP</option>
+            <option value="CRYPTO_VIP" ${m.tier === 'CRYPTO_VIP' ? 'selected' : ''}>CRYPTO VIP</option>
+            <option value="ALL_VIP" ${m.tier === 'ALL_VIP' ? 'selected' : ''}>ALL VIP</option>
+          </select>
+        </div>` : ''}
+      </div>
+    `).join('');
+  }, err => console.error('Members listener error:', err));
+}
+
+async function updateMemberTier(uid, newTier){
+  if (!currentMemberDoc || currentMemberDoc.role !== 'admin') return;
+  try {
+    await db.collection('members').doc(uid).update({ tier: newTier });
+  } catch(e) {
+    alert('Update failed: ' + e.message);
+  }
+}
+
+// ============================================================
+// VISIBILITY
+// ============================================================
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    renderMemberFeed();
+    updateSettingsPerformanceStats();
+  }
+});
+</script>
+</body>
+</html>
