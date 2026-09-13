@@ -8,6 +8,9 @@
   "orientation": "portrait",
   "background_color": "#070c14",
   "theme_color": "#070c14",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["finance", "business"],
   "icons": [
     {
       "src": "/icon-192.png",
