@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#060a10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>TW-HK Live Signals App</title>
+
+<style>
+  :root{
+    --navy-950:#060a10; --navy-900:#0d1522; --navy-800:#131e30; --navy-700:#1a2840;
+    --accent:#c9a227; --accent-bright:#e8c65a;
+    --green:#3ecf8e; --red:#e2564f; --blue:#4a9eff; --purple:#9b6bd9;
+    --ink:#e9edf3; --ink-dim:#8fa0b8; --line:#243348;
+    --card-bg:#101a2b; --sub-bg:#0a1320;
+    --font-size-base:12px;
+    --card-padding:12px;
+  }
+  body.light-theme {
+    --navy-950:#f0f3f9; --navy-900:#ffffff; --navy-800:#e5eaf2; --navy-700:#d2dbe8;
+    --accent:#b88e14; --accent-bright:#8c6b07;
+    --green:#1fa869; --red:#d93830; --blue:#1d7be6;
+    --purple:#7f4cc4; --ink:#0f172a; --ink-dim:#64748b; --line:#d4dce7;
+    --card-bg:#ffffff; --sub-bg:#eef2f8;
+  }
+  body.accent-blue { --accent:#1d7be6; --accent-bright:#4a9eff; }
+  body.accent-green { --accent:#1fa869; --accent-bright:#3ecf8e; }
+  body.accent-purple { --accent:#7f4cc4; --accent-bright:#9b6bd9; }
+  body.accent-red { --accent:#d93830; --accent-bright:#e2564f; }
+  body.font-small { --font-size-base:11px; }
+  body.font-medium { --font-size-base:12px; }
+  body.font-large { --font-size-base:13px; }
+  body.card-compact { --card-padding:10px; }
+  body.card-comfortable { --card-padding:13px; }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{background:var(--navy-950);}
+  body{
+    margin:0;color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+    min-height:100vh;padding:10px 10px calc(50px + env(safe-area-inset-bottom));
+    padding-top:calc(10px + env(safe-area-inset-top));
+    transition:background 0.25s ease, color 0.25s ease;
+    font-size:var(--font-size-base);
+    line-height:1.4;
+    font-weight:400;
+    letter-spacing:0.1px;
+  }
+  .wrap{max-width:520px;margin:0 auto;}
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:0 2px;gap:8px;}
+  .header-left{display:flex;align-items:center;gap:6px;}
+  .header-right{display:flex;align-items:center;gap:6px;}
+  .brand-group{text-align:left;flex:1;padding:0 6px;}
+  .brand{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:15px;letter-spacing:-0.2px;color:var(--accent-bright);font-weight:700;line-height:1.15;}
+  .tag{color:var(--ink-dim);font-size:8px;margin-top:2px;letter-spacing:1.2px;text-transform:uppercase;font-weight:600;}
+  .status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;box-shadow:0 0 4px var(--green);}
+  .icon-btn{background:var(--navy-900);border:1px solid var(--line);color:var(--accent-bright);height:34px;width:34px;padding:0;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;}
+  .icon-btn:active{opacity:0.7;}
+  .header-logo{height:34px;width:34px;border-radius:9px;object-fit:cover;border:1px solid var(--accent);background:var(--sub-bg);}
+  .view-toggle{display:flex;gap:5px;margin-bottom:9px;background:var(--navy-900);border:1px solid var(--line);border-radius:11px;padding:3px;}
+  .view-toggle button{flex:1;padding:8px;border:none;border-radius:8px;background:transparent;color:var(--ink-dim);font-weight:600;font-size:11px;cursor:pointer;font-family:inherit;letter-spacing:0.2px;}
+  .view-toggle button.active{background:var(--accent);color:#070c14;font-weight:700;}
+  .market-tabs{display:flex;gap:5px;margin-bottom:9px;}
+  .market-tab-btn{flex:1;padding:8px 6px;border-radius:9px;border:1px solid var(--line);background:var(--navy-900);color:var(--ink-dim);font-weight:600;font-size:11px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;letter-spacing:0.2px;}
+  .market-tab-btn.active.forex{background:rgba(201,162,39,0.15);border-color:var(--accent);color:var(--accent-bright);}
+  .market-tab-btn.active.crypto{background:rgba(155,107,217,0.15);border-color:var(--purple);color:#8d5cc9;}
+  .panel{background:var(--navy-900);border:1px solid var(--line);border-radius:12px;padding:var(--card-padding);margin-bottom:10px;}
+  .panel h2{font-size:10px;text-transform:uppercase;letter-spacing:1.3px;color:var(--accent);margin:0 0 8px;display:flex;align-items:center;gap:5px;font-weight:700;}
+  .panel h2::before{content:"";width:10px;height:2px;background:var(--accent);display:inline-block;border-radius:1px;}
+  input,select,textarea{width:100%;background:var(--sub-bg);border:1px solid var(--line);border-radius:7px;color:var(--ink);padding:9px 11px;font-size:11px;font-family:inherit;margin-bottom:7px;font-weight:400;}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);}
+  textarea{resize:vertical;min-height:60px;}
+  .btn{width:100%;padding:10px;border-radius:9px;border:none;background:var(--accent);color:#070c14;font-weight:700;font-size:11px;cursor:pointer;margin-top:3px;font-family:inherit;letter-spacing:0.3px;}
+  .btn:disabled{opacity:0.6;cursor:not-allowed;}
+  .link-btn{background:none;border:none;color:var(--accent-bright);font-size:11px;cursor:pointer;text-decoration:underline;padding:0;margin-top:5px;font-family:inherit;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+  .feed-item{background:var(--card-bg);border:1px solid var(--line);border-radius:13px;padding:var(--card-padding);margin-bottom:10px;position:relative;box-shadow:0 6px 20px rgba(0,0,0,0.22);overflow:hidden;}
+  .feed-item.market-FOREX{border-top:2px solid var(--accent);}
+  .feed-item.market-CRYPTO{border-top:2px solid var(--purple);}
+  .feed-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;gap:6px;}
+  .feed-pair{font-family:'SF Mono',Consolas,'Courier New',monospace;font-weight:800;font-size:15px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;letter-spacing:0.6px;color:var(--ink);text-shadow:0 0 0.4px currentColor;}
+  .market-badge{font-size:8px;font-weight:800;padding:2px 5px;border-radius:5px;letter-spacing:0.4px;}
+  .market-badge.FOREX{background:rgba(201,162,39,.15);color:var(--accent-bright);border:1px solid var(--accent);}
+  .market-badge.CRYPTO{background:rgba(155,107,217,.18);color:#8d5cc9;border:1px solid var(--purple);}
+  .trade-code{font-family:'SF Mono',Consolas,monospace;font-size:9px;font-weight:700;background:var(--sub-bg);border:1px solid var(--line);color:var(--accent-bright);padding:2px 5px;border-radius:4px;letter-spacing:0.4px;}
+  .feed-dir{font-size:9px;font-weight:700;padding:3px 7px;border-radius:8px;letter-spacing:0.5px;text-transform:uppercase;}
+  .feed-dir.BUY,.feed-dir.LONG{background:rgba(62,207,142,.15);color:var(--green);border:1px solid var(--green);}
+  .feed-dir.SELL,.feed-dir.SHORT{background:rgba(226,86,79,.15);color:var(--red);border:1px solid var(--red);}
+  .feed-dir.BUYLIMIT,.feed-dir.SELLLIMIT,.feed-dir.LONGLIMIT,.feed-dir.SHORTLIMIT{background:rgba(74,158,255,.15);color:var(--blue);border:1px solid var(--blue);}
+  .roadmap-badge{background:rgba(74,158,255,0.12);border:1px solid var(--blue);color:var(--blue);padding:5px 9px;border-radius:7px;font-size:10px;font-weight:600;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;gap:6px;letter-spacing:0.2px;}
+  .roadmap-badge.pending{border-color:var(--ink-dim);color:var(--ink-dim);background:rgba(143,160,184,0.12);}
+  .roadmap-badge.be{border-color:var(--accent-bright);color:var(--accent-bright);background:rgba(232,198,90,0.15);}
+  .roadmap-badge.tp{border-color:var(--green);color:var(--green);background:rgba(62,207,142,0.12);}
+  .roadmap-badge.sl{border-color:var(--red);color:var(--red);background:rgba(226,86,79,0.15);}
+  .pnl-box{background:var(--sub-bg);border:1px solid var(--line);border-radius:7px;padding:7px 9px;display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+  .pnl-box .label{font-size:8px;color:var(--ink-dim);text-transform:uppercase;font-weight:700;letter-spacing:0.5px;}
+  .pnl-box .value{font-size:13px;font-weight:700;font-family:'SF Mono',Consolas,monospace;letter-spacing:0.2px;}
+  .pnl-box .value.win{color:var(--green);}
+  .pnl-box .value.loss{color:var(--red);}
+  .pnl-box .value.be{color:var(--accent-bright);}
+  .pnl-box .value.neutral{color:var(--ink-dim);font-size:11px;font-family:inherit;font-weight:600;}
+  .rr-visual{margin-bottom:7px;background:var(--sub-bg);border:1px solid var(--line);border-radius:7px;padding:7px 8px;}
+  .rr-track{height:4px;width:100%;border-radius:2px;background:var(--line);display:flex;overflow:hidden;margin-top:4px;}
+  .rr-risk{background:var(--red);height:100%;}
+  .rr-reward{background:var(--green);height:100%;}
+  .rr-meta{display:flex;justify-content:space-between;font-size:9px;font-weight:600;letter-spacing:0.2px;}
+  .feed-levels{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;font-size:10px;margin-bottom:5px;}
+  .feed-levels div{background:var(--sub-bg);border:1px solid var(--line);border-radius:7px;padding:5px 3px;text-align:center;}
+  .feed-levels .k{color:var(--ink-dim);font-size:8px;display:block;text-transform:uppercase;font-weight:700;letter-spacing:0.3px;}
+  .v-entry{color:var(--blue);font-weight:700;display:block;margin-top:2px;font-family:'SF Mono',Consolas,monospace;font-size:10px;letter-spacing:0.2px;}
+  .v-sl{color:var(--red);font-weight:700;display:block;margin-top:2px;font-family:'SF Mono',Consolas,monospace;font-size:10px;letter-spacing:0.2px;}
+  .v-tp{color:var(--green);font-weight:700;display:block;margin-top:2px;font-family:'SF Mono',Consolas,monospace;font-size:10px;letter-spacing:0.2px;}
+  .locked-val{filter:blur(5px);user-select:none;opacity:0.7;}
+  .upgrade-note{margin-bottom:7px;font-size:10px;color:var(--accent);background:rgba(201,162,39,.1);border:1px dashed var(--accent);border-radius:8px;padding:9px;text-align:center;font-weight:600;line-height:1.4;}
+  .upgrade-note.crypto{color:#8d5cc9;background:rgba(155,107,217,.1);border-color:var(--purple);}
+  .card-footer-info{display:flex;justify-content:space-between;align-items:center;padding:7px 0 0;border-top:1px dashed var(--line);font-size:9px;color:var(--ink-dim);margin-top:5px;gap:6px;letter-spacing:0.2px;}
+  .auto-lot-text{font-weight:700;color:var(--ink);}
+  .btn-del{width:100%;margin-top:5px;padding:6px;border-radius:5px;border:1px solid var(--red);background:transparent;color:var(--red);font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.4px;}
+  .chat-box-card{margin-top:7px;background:var(--sub-bg);border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  .chat-toggle-btn{width:100%;background:transparent;border:none;color:var(--ink-dim);padding:8px 9px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:inherit;letter-spacing:0.3px;}
+  .chat-panel{padding:7px 9px 9px;border-top:1px solid var(--line);}
+  .chat-messages{max-height:150px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;margin-bottom:7px;padding-right:4px;}
+  .chat-msg-row{background:var(--card-bg);border:1px solid var(--line);border-radius:5px;padding:5px 7px;font-size:10px;}
+  .chat-msg-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;font-size:9px;color:var(--ink-dim);gap:5px;}
+  .chat-msg-author{font-weight:700;color:var(--accent-bright);}
+  .chat-msg-author.admin{color:var(--green);}
+  .chat-msg-text{color:var(--ink);word-break:break-word;line-height:1.35;font-size:10px;}
+  .chat-input-row{display:flex;gap:5px;}
+  .chat-input-row input{margin-bottom:0;padding:6px 7px;font-size:10px;}
+  .chat-send-btn{background:var(--accent);border:none;border-radius:6px;padding:0 11px;color:#070c14;font-weight:700;font-size:10px;cursor:pointer;font-family:inherit;letter-spacing:0.2px;}
+  .empty{color:var(--ink-dim);font-size:11px;text-align:center;padding:16px 0;}
+  .hidden{display:none !important;}
+  .errbox{font-size:10px;color:var(--red);margin-top:-3px;margin-bottom:7px;min-height:12px;}
+  .result-badge{font-size:8px;font-weight:700;padding:3px 7px;border-radius:4px;margin-top:5px;display:inline-block;letter-spacing:0.5px;}
+  .result-badge.WIN{background:rgba(62,207,142,.15);color:var(--green);}
+  .result-badge.LOSS{background:rgba(226,86,79,.15);color:var(--red);}
+  .result-badge.BE{background:rgba(232,198,90,.15);color:var(--accent-bright);}
+  .login-overlay{position:fixed;inset:0;background:var(--navy-950);z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px;opacity:0;pointer-events:none;transition:opacity 0.25s ease;}
+  .login-overlay.open{opacity:1;pointer-events:auto;}
+  .login-card{background:var(--navy-900);border:1px solid var(--accent);border-radius:18px;width:100%;max-width:380px;padding:22px 20px;box-shadow:0 14px 42px rgba(0,0,0,0.55);text-align:center;}
+  .login-logo{width:72px;height:72px;border-radius:18px;object-fit:cover;margin-bottom:12px;border:2px solid var(--accent);background:var(--sub-bg);}
+  .login-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:17px;color:var(--accent-bright);font-weight:700;margin:0 0 3px;letter-spacing:-0.2px;}
+  .login-subtitle{font-size:9px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:1.8px;margin-bottom:16px;font-weight:600;}
+  .login-card input{text-align:left;font-size:12px;padding:10px 12px;}
+  .login-card .btn{margin-top:7px;font-size:12px;padding:11px;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:14px;opacity:0;pointer-events:none;transition:all 0.25s ease;}
+  .modal-overlay.open{opacity:1;pointer-events:auto;}
+  .settings-card{background:var(--navy-900);border:1px solid var(--accent);border-radius:14px;width:100%;max-width:440px;padding:16px;max-height:90vh;overflow-y:auto;box-shadow:0 10px 32px rgba(0,0,0,0.55);}
+  .settings-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;border-bottom:1px solid var(--line);padding-bottom:9px;}
+  .settings-head h3{margin:0;font-size:11px;color:var(--accent-bright);text-transform:uppercase;letter-spacing:1.1px;font-weight:700;}
+  .close-btn{background:none;border:none;color:var(--ink-dim);font-size:16px;cursor:pointer;line-height:1;padding:3px;}
+  .settings-section{margin-bottom:0;}
+  .settings-section.collapsible{border-bottom:1px solid var(--line);}
+  .settings-section.collapsible:last-of-type{border-bottom:none;}
+  .section-toggle{width:100%;background:transparent;border:none;padding:13px 0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:inherit;color:var(--ink);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.1px;}
+  .section-toggle:active{opacity:0.7;}
+  .chevron{color:var(--ink-dim);font-size:12px;transition:transform 0.2s ease;}
+  .chevron.open{transform:rotate(180deg);}
+  .section-body{padding-bottom:13px;}
+  .settings-section label{font-size:9px;color:var(--ink-dim);text-transform:uppercase;display:block;margin-bottom:7px;font-weight:700;letter-spacing:0.5px;}
+  .user-badge{background:var(--sub-bg);border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin-bottom:11px;display:flex;justify-content:space-between;align-items:center;gap:7px;}
+  .logout-action{background:rgba(226,86,79,0.12);border:1px solid var(--red);color:var(--red);padding:11px;border-radius:9px;width:100%;font-weight:700;font-size:11px;cursor:pointer;margin-top:14px;font-family:inherit;letter-spacing:0.5px;}
+  .stats-grid{display:grid;grid-template-columns:repeat(2, 1fr);gap:7px;margin-bottom:7px;}
+  .stat-card{background:var(--sub-bg);border:1px solid var(--line);border-radius:9px;padding:9px;text-align:center;}
+  .stat-card-title{font-size:8px;color:var(--ink-dim);text-transform:uppercase;font-weight:700;display:block;margin-bottom:3px;letter-spacing:0.4px;}
+  .stat-card-val{font-size:14px;font-weight:700;font-family:'SF Mono',Consolas,monospace;}
+  .stat-card-val.win{color:var(--green);}
+  .stat-card-val.loss{color:var(--red);}
+  .stat-card-val.be{color:var(--accent-bright);}
+  .stat-card-val.neutral{color:var(--accent-bright);}
+  .stat-net-banner{background:var(--sub-bg);border:1px solid var(--line);border-radius:9px;padding:8px 11px;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;}
+  .member-row{background:var(--sub-bg);border:1px solid var(--line);border-radius:7px;padding:8px 9px;margin-bottom:7px;display:flex;flex-direction:column;gap:5px;}
+  .member-row-top{display:flex;justify-content:space-between;align-items:center;font-size:10px;gap:7px;}
+  .tier-select{background:var(--navy-900);border:1px solid var(--line);color:var(--accent-bright);font-size:10px;padding:4px 7px;border-radius:5px;margin-bottom:0;font-family:inherit;}
+  .admin-status-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:9px;padding-top:9px;border-top:1px dashed var(--line);}
+  .admin-status-actions .full-row{grid-column:1 / -1;}
+  .status-btn{padding:8px 5px;border-radius:7px;border:1px solid var(--line);background:var(--sub-bg);color:var(--ink);font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.3px;transition:all 0.15s;}
+  .status-btn:hover:not(:disabled){opacity:0.85;}
+  .status-btn:disabled{opacity:0.3;cursor:not-allowed;}
+  .status-btn.active{box-shadow:0 0 0 2px var(--accent);}
+  .status-btn.entry{border-color:var(--blue);color:var(--blue);}
+  .status-btn.be{border-color:var(--accent-bright);color:var(--accent-bright);}
+  .status-btn.tp{border-color:var(--green);color:var(--green);}
+  .status-btn.sl{border-color:var(--red);color:var(--red);}
+  .status-btn.entry.active{background:rgba(74,158,255,0.15);}
+  .status-btn.be.active{background:rgba(232,198,90,0.15);}
+  .status-btn.tp.active{background:rgba(62,207,142,0.15);}
+  .status-btn.sl.active{background:rgba(226,86,79,0.15);}
+  .wa-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:10000;display:flex;align-items:center;justify-content:center;padding:14px;opacity:0;pointer-events:none;transition:opacity 0.2s ease;}
+  .wa-overlay.open{opacity:1;pointer-events:auto;}
+  .wa-card{background:var(--navy-900);border:1px solid var(--green);border-radius:14px;width:100%;max-width:420px;padding:16px;box-shadow:0 10px 32px rgba(0,0,0,0.55);}
+  .wa-title{font-size:11px;color:var(--green);font-weight:700;margin-bottom:10px;letter-spacing:0.5px;text-align:center;text-transform:uppercase;}
+  .wa-message{background:var(--sub-bg);border:1px solid var(--line);border-radius:9px;padding:12px;margin-bottom:12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:12px;color:var(--ink);text-align:left;word-break:break-word;line-height:1.55;white-space:pre-wrap;font-weight:600;}
+  .wa-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;}
+  .wa-btn{padding:9px 5px;border-radius:8px;border:none;font-weight:700;font-size:10px;cursor:pointer;font-family:inherit;letter-spacing:0.3px;}
+  .wa-btn-share{background:var(--green);color:#070c14;}
+  .wa-btn-copy{background:var(--blue);color:#fff;}
+  .wa-btn-close{background:var(--sub-bg);color:var(--ink);border:1px solid var(--line);}
+  .appearance-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px;}
+  .appearance-opt{flex:1;min-width:55px;padding:7px 5px;border-radius:7px;border:1px solid var(--line);background:var(--sub-bg);color:var(--ink-dim);font-size:9px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;letter-spacing:0.2px;}
+  .appearance-opt.active{border-color:var(--accent);color:var(--accent-bright);background:rgba(201,162,39,0.1);}
+  .appearance-opt.color-gold.active{border-color:#c9a227;color:#e8c65a;}
+  .appearance-opt.color-blue.active{border-color:#1d7be6;color:#4a9eff;}
+  .appearance-opt.color-green.active{border-color:#1fa869;color:#3ecf8e;}
+  .appearance-opt.color-purple.active{border-color:#7f4cc4;color:#9b6bd9;}
+  .appearance-opt.color-red.active{border-color:#d93830;color:#e2564f;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="header-left">
+      <img src="icon-192.png" alt="TW-HK" class="header-logo" onerror="this.style.display='none'">
+      <span class="status-dot" title="Active"></span>
+    </div>
+    <div class="brand-group">
+      <div class="brand">TW-HK Live Signals App</div>
+      <div class="tag">Real-time Alerts</div>
+    </div>
+    <div class="header-right">
+      <button class="icon-btn" id="openSettingsBtn" onclick="toggleSettings(true)" title="Settings" aria-label="Settings">&#9881;</button>
+    </div>
+  </header>
+
+  <div id="appBox" class="hidden">
+    <div class="view-toggle" id="viewToggle">
+      <button id="btn-member" class="active" onclick="switchView('member')">Live Signals</button>
+      <button id="btn-admin" onclick="switchView('admin')">Admin Hub</button>
+    </div>
+
+    <div id="memberView">
+      <div class="market-tabs">
+        <button id="tab-forex" class="market-tab-btn active forex" onclick="switchMarketTab('FOREX')">Forex &amp; Indices</button>
+        <button id="tab-crypto" class="market-tab-btn crypto" onclick="switchMarketTab('CRYPTO')">Crypto Futures</button>
+      </div>
+
+      <div class="panel">
+        <h2 id="feedSectionTitle">Forex &amp; Indices Signals</h2>
+        <div id="memberFeed"><div class="empty">Loading signals...</div></div>
+      </div>
+    </div>
+
+    <div id="adminView" class="hidden">
+      <div class="panel" style="border: 1px dashed var(--accent);">
+        <h2>Quick Paste Parser</h2>
+        <div style="font-size:11px;color:var(--ink-dim);margin-bottom:6px;">Paste raw signal text here:</div>
+        <textarea id="quickRawText" placeholder="Paste signal text here..."></textarea>
+        <button class="btn" style="background:var(--blue);color:#fff;margin-top:0;" onclick="parseRawSignalText()">Auto-Fill Form</button>
+      </div>
+
+      <div class="panel">
+        <h2>Deploy New Signal</h2>
+        <div class="grid2">
+          <input id="a-pair" placeholder="Asset (XAUUSD, EURUSD, BTCUSDT)" oninput="onPairInput()" onblur="onPairInput()">
+        </div>
+        <div class="grid2">
+          <select id="a-dir">
+            <option value="">-- Select Direction --</option>
+          </select>
+          <input id="a-entry" placeholder="Entry Level" type="number" step="any">
+        </div>
+        <div class="grid2">
+          <input id="a-sl" placeholder="Stop Loss" type="number" step="any">
+          <input id="a-tp1" placeholder="Take Profit 1" type="number" step="any">
+        </div>
+        <div class="grid2">
+          <input id="a-tp2" placeholder="Take Profit 2 (Optional)" type="number" step="any">
+          <input id="a-tp3" placeholder="Take Profit 3 (Optional)" type="number" step="any">
+        </div>
+        <div id="autoDetectInfo" style="font-size:11px;color:var(--ink-dim);margin-bottom:8px;min-height:14px;"></div>
+        <button class="btn" id="btnPublish" onclick="postSignal()">Publish Signal</button>
+      </div>
+
+      <div class="panel">
+        <h2>Active Deployed Orders</h2>
+        <div id="adminFeed"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Portal Access Control (Members)</h2>
+        <div id="membersList"><div class="empty">Loading subscriber list...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="snapshotContainer"></div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <img src="icon-192.png" alt="TW-HK" class="login-logo" onerror="this.style.display='none'">
+    <h2 class="login-title" id="authTitle">Sign In</h2>
+    <div class="login-subtitle" id="authSubtitle">TW-HK Live Signals App</div>
+    <input id="a-name" placeholder="Full Name" class="hidden">
+    <input id="a-email" type="email" placeholder="Email Address" autocomplete="email">
+    <input id="a-pass" type="password" placeholder="Password" autocomplete="current-password">
+    <div class="errbox" id="authErr"></div>
+    <button class="btn" id="authSubmit" onclick="handleAuthSubmit()">Sign In</button>
+    <button class="link-btn" onclick="toggleAuthMode()">Request Portal Access</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="settingsModal">
+  <div class="settings-card">
+    <div class="settings-head">
+      <h3>Portal Settings</h3>
+      <button class="close-btn" onclick="toggleSettings(false)" aria-label="Close">&#10005;</button>
+    </div>
+
+    <div class="settings-section collapsible" id="riskSection">
+      <button class="section-toggle" onclick="toggleSection('riskBody')">
+        <span>Risk Management</span>
+        <span class="chevron" id="chev-riskBody">&#9662;</span>
+      </button>
+      <div class="section-body hidden" id="riskBody">
+        <div class="grid2">
+          <div>
+            <span style="font-size:10px;color:var(--ink-dim);">Account Balance ($)</span>
+            <input type="number" id="settBalance" placeholder="1000" oninput="saveRiskSettings()">
+          </div>
+          <div>
+            <span style="font-size:10px;color:var(--ink-dim);">Risk per Trade ($)</span>
+            <input type="number" id="settRiskAmount" placeholder="10" oninput="saveRiskSettings()">
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--green);margin-top:2px;" id="riskCalcSummary">Set your capital to auto-size all signal lots.</div>
+      </div>
+    </div>
+
+    <div class="settings-section collapsible">
+      <button class="section-toggle" onclick="toggleSection('appearanceBody')">
+        <span>Appearance</span>
+        <span class="chevron" id="chev-appearanceBody">&#9662;</span>
+      </button>
+      <div class="section-body hidden" id="appearanceBody">
+        <div style="font-size:10px;color:var(--ink-dim);margin-bottom:6px;">Accent Color</div>
+        <div class="appearance-row" id="accentOptions">
+          <button class="appearance-opt color-gold active" onclick="setAccent('gold')">Gold</button>
+          <button class="appearance-opt color-blue" onclick="setAccent('blue')">Blue</button>
+          <button class="appearance-opt color-green" onclick="setAccent('green')">Green</button>
+          <button class="appearance-opt color-purple" onclick="setAccent('purple')">Purple</button>
+          <button class="appearance-opt color-red" onclick="setAccent('red')">Red</button>
+        </div>
+        <div style="font-size:10px;color:var(--ink-dim);margin-bottom:6px;">Font Size</div>
+        <div class="appearance-row" id="fontOptions">
+          <button class="appearance-opt" onclick="setFontSize('small')">Small</button>
+          <button class="appearance-opt active" onclick="setFontSize('medium')">Medium</button>
+          <button class="appearance-opt" onclick="setFontSize('large')">Large</button>
+        </div>
+        <div style="font-size:10px;color:var(--ink-dim);margin-bottom:6px;">Card Style</div>
+        <div class="appearance-row" id="cardOptions">
+          <button class="appearance-opt" onclick="setCardStyle('compact')">Compact</button>
+          <button class="appearance-opt active" onclick="setCardStyle('comfortable')">Comfortable</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section collapsible">
+      <button class="section-toggle" onclick="toggleSection('accountBody')">
+        <span>Account Info</span>
+        <span class="chevron" id="chev-accountBody">&#9662;</span>
+      </button>
+      <div class="section-body" id="accountBody">
+        <div class="user-badge">
+          <div>
+            <div style="font-weight:700;font-size:13px;" id="settUserName">-</div>
+            <div style="font-size:11px;color:var(--ink-dim);" id="settUserEmail">-</div>
+          </div>
+          <span class="trade-code" id="settUserTier">FREE</span>
+        </div>
+
+        <div style="font-size:11px;color:var(--ink-dim);background:var(--sub-bg);padding:8px 10px;border-radius:8px;border:1px solid var(--line);line-height:1.6;margin-bottom:10px;">
+          Timezone: <b style="color:var(--ink);">UTC-4 EST (New York)</b><br>
+          Daily Reset: <b style="color:var(--ink);">12:00 AM Pakistan Time</b><br>
+          Mode: <b style="color:var(--ink);">Manual Signal Management</b>
+        </div>
+
+        <label style="font-size:9px;color:var(--ink-dim);text-transform:uppercase;font-weight:700;letter-spacing:0.5px;display:block;margin-bottom:7px;">Today Performance Summary</label>
+        <div class="stats-grid">
+          <div class="stat-card"><span class="stat-card-title">Total Trades</span><span class="stat-card-val neutral" id="statTodayTrades">0</span></div>
+          <div class="stat-card"><span class="stat-card-title">Break Even</span><span class="stat-card-val be" id="statTodayBE">0</span></div>
+          <div class="stat-card"><span class="stat-card-title">Total Profit</span><span class="stat-card-val win" id="statTodayProfit">+$0.00</span></div>
+          <div class="stat-card"><span class="stat-card-title">Total Loss</span><span class="stat-card-val loss" id="statTodayLoss">-$0.00</span></div>
+        </div>
+        <div class="stat-net-banner">
+          <span>Net Today Result</span>
+          <span id="statTodayNet" class="stat-card-val neutral">$0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="logout-action" onclick="doLogout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="wa-overlay" id="waOverlay">
+  <div class="wa-card">
+    <div class="wa-title">Share Update on WhatsApp</div>
+    <div class="wa-message" id="waMessage"></div>
+    <div class="wa-actions">
+      <button class="wa-btn wa-btn-share" onclick="confirmWhatsAppShare()">Share</button>
+      <button class="wa-btn wa-btn-copy" onclick="copyWhatsAppText()">Copy</button>
+      <button class="wa-btn wa-btn-close" onclick="closeWaPopup()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
