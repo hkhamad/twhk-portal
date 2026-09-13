@@ -13,18 +13,14 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  console.log('[SW] Background message:', payload);
   const title = (payload.notification && payload.notification.title) || 'TW-HK Signal';
-  const options = {
-    body: (payload.notification && payload.notification.body) || 'New signal update',
+  const body = (payload.notification && payload.notification.body) || 'New signal update';
+  self.registration.showNotification(title, {
+    body: body,
     icon: '/icon-192.png',
     badge: '/icon-192.png',
-    vibrate: [200, 100, 200],
-    tag: payload.data && payload.data.signalId ? payload.data.signalId : 'tw-hk-signal',
-    data: payload.data || {},
-    requireInteraction: true
-  };
-  return self.registration.showNotification(title, options);
+    vibrate: [200, 100, 200]
+  });
 });
 
 self.addEventListener('notificationclick', (event) => {
