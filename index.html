@@ -1,0 +1,251 @@
+You are an expert web developer. Generate a COMPLETE, WORKING, SINGLE-FILE HTML5 PWA called "TW-HK Portal" — a trading signal app. 
+
+CRITICAL RULES:
+1. Give the ENTIRE file in ONE code block. Do NOT split randomly.
+2. If output exceeds your limit, say "Part 1 of N" and I'll say "continue" — continue from EXACTLY where you left off.
+3. Every <script> tag MUST close. Every function MUST complete. NO "// ... rest here". NO abbreviation.
+4. The file MUST end with </html>. Every byte present.
+5. Start with <!DOCTYPE html>.
+
+=================================================
+FIREBASE CONFIG (use exactly this)
+=================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyD1GgHel2TPnmuemGTD0w50W-DWsaVKW5E",
+  authDomain: "tw-hk-32169.firebaseapp.com",
+  projectId: "tw-hk-32169",
+  storageBucket: "tw-hk-32169.firebasestorage.app",
+  messagingSenderId: "844851720789",
+  appId: "1:844851720789:web:5608a7084081b5a85c1adc"
+};
+Use Firebase compat SDK v10.13.0:
+- firebase-app-compat.js
+- firebase-auth-compat.js
+- firebase-firestore-compat.js
+- firebase-messaging-compat.js
+
+VAPID Key placeholder: "PASTE_VAPID_KEY_HERE"
+
+=================================================
+🔴 PROBLEM 1: REAL FOREX/GOLD/NASDAQ PRICES
+=================================================
+Currently prices are hardcoded anchors with random jitter — WRONG.
+
+FIX: Use TwelveData FREE API for real prices.
+
+TwelveData Free Plan:
+- 800 API calls per day
+- 8 symbols per WebSocket connection
+- API Key placeholder: "PASTE_TWELVEDATA_KEY_HERE"
+
+IMPLEMENTATION:
+1. Fetch real-time price via REST endpoint:
+   https://api.twelvedata.com/price?symbol=XAU/USD&apikey=API_KEY
+   
+2. For multiple pairs use batch:
+   https://api.twelvedata.com/price?symbol=EUR/USD,GBP/USD,XAU/USD,US100&apikey=API_KEY
+
+3. Symbol mapping:
+   - XAUUSD → "XAU/USD"
+   - EURUSD → "EUR/USD"
+   - GBPUSD → "GBP/USD"
+   - US100USD / NAS100 → "NDX" or "US100" (Nasdaq 100)
+   - US30USD → "DJI" (Dow Jones)
+   - SPX500USD → "SPX" (S&P 500)
+
+4. Update interval: Every 15 seconds (to stay within 800/day limit even with many pairs)
+
+5. Crypto: Use Binance WebSocket (real-time, free, unlimited):
+   wss://stream.binance.com:9443/ws/btcusdt@ticker/ethusdt@ticker
+
+6. Show connection status dot:
+   - Green = TwelveData live
+   - Yellow = Using cached price
+   - Red = Disconnected
+
+7. DO NOT use random jitter. Use REAL prices from TwelveData.
+
+=================================================
+🔴 PROBLEM 2: PUSH NOTIFICATIONS ERROR
+=================================================
+Currently showing "Error registering push notifications" and "Failed to update setting".
+
+ROOT CAUSES TO FIX:
+a) Service Worker not implemented properly
+b) VAPID key not set correctly
+c) Firestore save failing
+
+FIX:
+
+A) SERVICE WORKER (inline via Blob URL):
+Create firebase-messaging-sw.js on the fly:
+- importScripts Firebase app + messaging
+- Initialize Firebase with same config
+- Handle background messages:
+  messaging.onBackgroundMessage((payload) => {
+    const {title, body} = payload.notification;
+    self.registration.showNotification(title, {
+      body, icon: '/icon-192.png', badge: '/icon-192.png',
+      vibrate: [200, 100, 200]
+    });
+  });
+- Handle notificationclick → clients.openWindow('/')
+
+B) FCM TOKEN REGISTRATION:
+async function registerFCM() {
+  try {
+    if (!('Notification' in window)) return null;
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') return null;
+    
+    const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    const messaging = firebase.messaging();
+    const token = await messaging.getToken({
+      vapidKey: 'PASTE_VAPID_KEY_HERE',
+      serviceWorkerRegistration: swReg
+    });
+    
+    if (token && currentUid) {
+      await db.collection('members').doc(currentUid).update({
+        fcmTokens: firebase.firestore.FieldValue.arrayUnion(token),
+        notificationsEnabled: true
+      });
+      document.getElementById('fcmTokenInfo').textContent = 'FCM Token: Registered ✓';
+    }
+    return token;
+  } catch(e) {
+    console.error('FCM registration error:', e);
+    showToast('Notification setup failed: ' + e.message, true);
+    return null;
+  }
+}
+
+C) NOTIFICATION SETTINGS FIRESTORE STRUCTURE:
+members/{uid}.notifyPrefs = {
+  newSignal: true, tp1: true, tp2: true, tp3: true,
+  slHit: true, beHit: true, statusUpdate: true,
+  comments: true, announcements: false
+}
+
+D) SAVE SETTING FUNCTION (fix "Failed to update setting" error):
+async function saveNotifPref(key, value) {
+  try {
+    if (!currentUid) return;
+    await db.collection('members').doc(currentUid).set({
+      notifyPrefs: { [key]: value }
+    }, { merge: true });
+    showToast('Setting saved');
+  } catch(e) {
+    showToast('Failed to save: ' + e.message, true);
+  }
+}
+
+E) CLIENT-SIDE NOTIFICATION TRIGGER (works without Cloud Functions):
+- Every user's app listens to signals collection via onSnapshot
+- Track lastSeenTimestamp in localStorage
+- On new signal OR status change, check notifyPrefs + market filter
+- If enabled, trigger:
+  navigator.serviceWorker.ready.then(reg => {
+    reg.showNotification(title, {body, icon, vibrate: [200,100,200]});
+  });
+- Also show in-app toast
+
+=================================================
+🔴 PROBLEM 3: REMOVE WHATSAPP SHARE BUTTON
+=================================================
+In feedCard() function, DELETE the WhatsApp button:
+<button class="whatsapp-share-btn" onclick="shareOnWhatsApp(...)">
+  Share on WhatsApp
+</button>
+Also delete the shareOnWhatsApp() function entirely.
+
+=================================================
+CORE FEATURES (keep all)
+=================================================
+1. Auth: email/password login + register (name field). Create members/{uid} on signup with role="member", tier="FREE", notificationsEnabled=false.
+
+2. Header: Brand "TW-HK Portal", theme toggle, settings button (hidden until login), live status dot.
+
+3. Member View:
+   - Tabs: FOREX & Indices | Crypto Futures
+   - Signal cards: pair, market badge, direction, trade code, roadmap status, live price, live PnL, R:R bar, Entry/SL/TP1/TP2/TP3, auto-lot, discussion chat
+   - Access control: FREE=blurred levels, FOREX_VIP=FOREX only, CRYPTO_VIP=CRYPTO only, ALL_VIP=all, admin=all
+   - Only today's signals (post-PKT midnight UTC+5) + all open trades
+
+4. Admin View:
+   - Quick Paste Parser (regex extract pair, direction, entry, SL, TP1, TP2, TP3)
+   - Deploy Signal form with "NOW" button (uses current live price)
+   - Active orders list with delete button
+   - Members list with tier dropdown
+
+5. Settings Modal:
+   - User info
+   - Notifications section (Master toggle + individual checkboxes for each type)
+   - Today's stats: Trades, BE, Profit, Loss, Net
+   - Risk: Balance ($), Risk per Trade ($) — saved to Firestore + localStorage
+   - Sign Out
+
+6. Live Prices:
+   - Crypto: Binance WebSocket
+   - Forex/Gold/Indices: TwelveData REST API (poll every 15 sec)
+   - Fallback to cached price if API fails
+
+7. Auto TP/SL: Every 1 sec check prices vs TP1/TP2/TP3/SL, update Firestore roadmapStatus
+
+8. Lot Size: riskDollar / (SL_distance × multiplier)
+   Multipliers: FOREX=100000, XAUUSD=100, US100=20, CRYPTO=1
+
+9. PnL: Closed trades from TP hit + lot; open trades = (current - entry) × lot × mult
+
+10. Theme toggle: Dark navy/gold default + Light. localStorage.
+
+11. Toast notifications (no alert()).
+
+=================================================
+BUGS TO FIX (from broken previous version)
+=================================================
+1. Previous file was INCOMPLETE → blank screen. THIS TIME COMPLETE.
+2. Forex prices random → use TwelveData real API.
+3. Chat listeners leaked → unsubscribe on signal delete.
+4. postSignal() catch block showed "success" → fix.
+5. Race condition in checkAutoTargets → guard.
+6. Auth errors silent → show clearly.
+7. Settings button visible before login → hide until logged in.
+8. Member tier changes not live → reload doc on change.
+9. Empty feed → show loading + empty states.
+10. Notification settings not saving → fix Firestore merge write.
+
+=================================================
+UI DESIGN
+=================================================
+Dark colors:
+--navy-950:#070c14, --navy-900:#0b1420, --gold:#c9a227, --gold-bright:#e8c65a,
+--green:#3ecf8e, --red:#e2564f, --blue:#4a9eff, --purple:#9b6bd9,
+--ink:#e9edf3, --ink-dim:#8fa0b8, --line:#22314a
+
+Font: 'Segoe UI', system-ui. Brand: Georgia serif.
+Mobile-first, max-width 500px centered.
+Rounded cards 14-16px.
+
+=================================================
+IMPORTANT
+=================================================
+- No external CSS/JS except Firebase SDK + html2canvas
+- Every onclick function globally defined
+- Use FieldValue.serverTimestamp() for createdAt
+- Use onSnapshot for realtime
+- Asia/Karachi timezone for dates
+- Compat API (db.collection, not modular)
+- Service Worker via Blob URL (single file constraint)
+- Add clear TODO comments where user must paste API keys
+
+=================================================
+DELIVERABLE
+=================================================
+COMPLETE single index.html. 
+
+If too long: "Part 1 of N" then continue when I say "continue".
+DO NOT skip. DO NOT abbreviate.
+
+Start: <!DOCTYPE html>
+End: </html>
