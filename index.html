@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TW-HK Portal</title>
+    
+    <!-- Firebase Compat SDK v10.13.0 -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            --navy-950: #070c14;
+            --navy-900: #0b1420;
+            --gold: #c9a227;
+            --gold-bright: #e8c65a;
+            --green: #3ecf8e;
+            --red: #e2564f;
+            --blue: #4a9eff;
+            --purple: #9b6bd9;
+            --ink: #e9edf3;
+            --ink-dim: #8fa0b8;
+            --line: #22314a;
+            --card-bg: #111a2c;
+            --input-bg: #16233a;
+        }
+
+        [data-theme="light"] {
+            --navy-950: #f4f6f9;
+            --navy-900: #e4e9f0;
+            --gold: #9e7f1a;
+            --gold-bright: #b89320;
+            --green: #108043;
+            --red: #c92a2a;
+            --blue: #1c7ed6;
+            --purple: #7950f2;
+            --ink: #1a202c;
+            --ink-dim: #718096;
+            --line: #cbd5e0;
+            --card-bg: #ffffff;
+            --input-bg: #edf2f7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--navy-950);
+            color: var(--ink);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            max-height: 950px;
+            background-color: var(--navy-900);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid var(--line);
+        }
+
+        @media(min-width: 501px) {
+            #app {
+                border-radius: 20px;
+                height: 90vh;
+            }
+        }
+
+        header {
+            padding: 14px 16px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .brand {
+            font-family: Georgia, serif;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background-color: var(--red);
+            display: inline-block;
+            box-shadow: 0 0 8px currentColor;
+        }
+        .status-dot.green { background-color: var(--green); }
+        .status-dot.yellow { background-color: var(--gold); }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: var(--input-bg);
+            border: 1px solid var(--line);
+            color: var(--ink);
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            position: relative;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: var(--input-bg);
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            gap: 4px;
+        }
+
+        .nav-tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--ink-dim);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+        }
+
+        .nav-tab.active {
+            background: var(--card-bg);
+            color: var(--gold);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 14px;
+            position: relative;
+        }
+
+        .btn {
+            background: var(--gold);
+            color: #000;
+            border: none;
+            padding: 10px 16px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            transition: opacity 0.2s;
+        }
+        .btn:active { opacity: 0.8; }
+        .btn-secondary { background: var(--input-bg); color: var(--ink); border: 1px solid var(--line); }
+        .btn-danger { background: var(--red); color: #fff; }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--ink-dim);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-control {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--line);
+            padding: 10px 12px;
+            color: var(--ink);
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+        .form-control:focus {
+            border-color: var(--gold);
+            outline: none;
+        }
+
+        .toast {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--card-bg);
+            border: 1px solid var(--gold);
+            color: var(--ink);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        .toast.error { border-color: var(--red); color: var(--red); }
+
+        .modal {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(7, 12, 20, 0.85);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .modal.open { opacity: 1; pointer-events: auto; }
+        .modal-content {
+            width: 90%;
+            max-width: 420px;
+            background: var(--card-bg);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 20px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .signal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-buy { background: rgba(62, 207, 142, 0.15); color: var(--green); }
+        .badge-sell { background: rgba(226, 86, 79, 0.15); color: var(--red); }
+        .badge-market { background: var(--input-bg); color: var(--ink-dim); border: 1px solid var(--line); }
+
+        .grid-levels {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin: 12px 0;
+            text-align: center;
+        }
+        .level-box {
+            background: var(--input-bg);
+            padding: 6px;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+        }
+        .level-box span { display: block; font-size: 0.65rem; color: var(--ink-dim); }
+        .level-box strong { font-size: 0.8rem; }
+
+        .blurred {
+            filter: blur(5px);
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .chat-section {
+            margin-top: 12px;
+            border-top: 1px solid var(--line);
+            padding-top: 10px;
+        }
+        .chat-messages {
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .chat-msg {
+            background: var(--input-bg);
+            padding: 6px 10px;
+            border-radius: 8px;
+        }
+        .chat-msg .author { font-weight: bold; color: var(--gold); margin-right: 4px; }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 22px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--input-bg);
+            border: 1px solid var(--line);
+            transition: .3s;
+            border-radius: 22px;
+        }
+        .slider:before {
+            position: absolute; content: "";
+            height: 16px; width: 16px;
+            left: 2px; bottom: 2px;
+            background-color: var(--ink-dim);
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--gold); }
+        input:checked + .slider:before { transform: translateX(18px); background-color: #000; }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 30px;
+            color: var(--ink-dim);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <header>
+        <div class="brand">
+            <span id="connectionDot" class="status-dot"></span>
+            TW-HK Portal
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
+            <button class="icon-btn" id="settingsBtn" onclick="openSettings()" style="display:none;" title="Settings">⚙️</button>
+        </div>
+    </header>
+
+    <div class="main-content" id="mainContent">
+        <!-- Dynamic Content injected here -->
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 style="font-family:Georgia, serif; color:var(--gold);">Portal Settings</h3>
+                <button class="icon-btn" onclick="closeSettings()">✕</button>
+            </div>
+            
+            <div id="userInfoSection" style="margin-bottom:16px; font-size:0.85rem; background:var(--input-bg); padding:10px; border-radius:10px;"></div>
+
+            <div class="form-group">
+                <label>Risk Calculator</label>
+                <div style="display:flex; gap:8px;">
+                    <input type="number" id="riskBalance" class="form-control" placeholder="Balance ($)" onchange="saveRiskSettings()">
+                    <input type="number" id="riskPerTrade" class="form-control" placeholder="Risk ($)" onchange="saveRiskSettings()">
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top:16px;">
+                <label>Push Notifications</label>
+                <div id="fcmTokenInfo" style="font-size:0.75rem; color:var(--ink-dim); margin-bottom:8px;">FCM Token: Not Registered</div>
+                <button class="btn btn-secondary" onclick="registerFCM()">Enable Notifications</button>
+            </div>
+
+            <div style="margin-top:16px;">
+                <label style="display:block; font-size:0.75rem; color:var(--ink-dim); margin-bottom:6px; text-transform:uppercase;">Notification Preferences</label>
+                <div style="display:flex; flex-direction:column; gap:8px; font-size:0.85rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;"><span id="pref-lbl-newSignal">New Signals</span><label class="toggle-switch"><input type="checkbox" id="pref-newSignal" onchange="saveNotifPref('newSignal', this.checked)"><span class="slider"></span></label></div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;"><span id="pref-lbl-tp1">TP 1 Hit</span><label class="toggle-switch"><input type="checkbox" id="pref-tp1" onchange="saveNotifPref('tp1', this.checked)"><span class="slider"></span></label></div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;"><span id="pref-lbl-tp2">TP 2 Hit</span><label class="toggle-switch"><input type="checkbox" id="pref-tp2" onchange="saveNotifPref('tp2', this.checked)"><span class="slider"></span></label></div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;"><span id="pref-lbl-tp3">TP 3 Hit</span><label class="toggle-switch"><input type="checkbox" id="pref-tp3" onchange="saveNotifPref('tp3', this.checked)"><span class="slider"></span></label></div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;"><span id="pref-lbl-slHit">SL Hit</span><label class="toggle-switch"><input type="checkbox" id="pref-slHit" onchange="saveNotifPref('slHit', this.checked)"><span class="slider"></span></label></div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;"><span id="pref-lbl-beHit">Breakeven Hit</span><label class="toggle-switch"><input type="checkbox" id="pref-beHit" onchange="saveNotifPref('beHit', this.checked)"><span class="slider"></span></label></div>
+                </div>
+            </div>
+
+            <div id="statsSection" style="margin-top:16px; font-size:0.85rem; background:var(--input-bg); padding:10px; border-radius:10px;"></div>
+
+            <button class="btn btn-danger" style="margin-top:20px;" onclick="signOut()">Sign Out</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toastMessage"></div>
+</div>
+
+<script>
+    // --- FIREBASE INIT ---
+    // TODO: Replace or verify configuration values if necessary
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1GgHel2TPnmuemGTD0w50W-DWsaVKW5E",
+      authDomain: "tw-hk-32169.firebaseapp.com",
+      projectId: "tw-hk-32169",
+      storageBucket: "tw-hk-32169.firebasestorage.app",
+      messagingSenderId: "844851720789",
+      appId: "1:844851720789:web:5608a7084081b5a85c1adc"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // --- GLOBALS ---
+    let currentUid = null;
+    let currentUserData = null;
+    let activeTab = 'FOREX';
+    let livePrices = {};
+    let priceSourceStatus = 'red'; // red, yellow, green
+    let unsubscribeSignals = null;
+    let chatListeners = {};
+    let binanceWs = null;
+    let twelveDataTimer = null;
+
+    // TODO: Paste your TwelveData API Key here
+    const TWELVEDATA_KEY = "PASTE_TWELVEDATA_KEY_HERE";
+    // TODO: Paste your VAPID Key here for FCM
+    const VAPID_KEY = "PASTE_VAPID_KEY_HERE";
+
+    // --- SERVICE WORKER REGISTRATION (BLOB) ---
+    if ('serviceWorker' in navigator) {
+        const swCode = `
+            importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js');
+            importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js');
+            firebase.initializeApp(${JSON.stringify(firebaseConfig)});
+            const messaging = firebase.messaging();
+            messaging.onBackgroundMessage((payload) => {
+                const {title, body} = payload.notification || {};
+                self.registration.showNotification(title || 'TW-HK Portal', {
+                    body: body || 'New update available',
+                    icon: '/icon-192.png',
+                    badge: '/icon-192.png',
+                    vibrate: [200, 100, 200]
+                });
+            });
+            self.addEventListener('notificationclick', (event) => {
+                event.notification.close();
+                event.waitUntil(clients.openWindow('/'));
+            });
+        `;
+        const blob = new Blob([swCode], {type: 'text/javascript'});
+        const swUrl = URL.createObjectURL(blob);
+        navigator.serviceWorker.register(swUrl).catch(e => console.error("SW registration failed", e));
+    }
+
+    // --- TOAST UTILS ---
+    function showToast(msg, isError = false) {
+        const t = document.getElementById('toastMessage');
+        t.textContent = msg;
+        t.className = 'toast show' + (isError ? ' error' : '');
+        setTimeout(() => { t.className = 'toast'; }, 3000);
+    }
+
+    // --- THEME ---
+    function toggleTheme() {
+        const html = document.documentElement;
+        const current = html.getAttribute('data-theme');
+        const next = current === 'light' ? 'dark' : 'light';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    }
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // --- AUTH STATE ---
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            currentUid = user.uid;
+            document.getElementById('settingsBtn').style.display = 'flex';
+            await loadUserData();
+            startPriceFeeds();
+            renderApp();
+        } else {
+            currentUid = null;
+            currentUserData = null;
+            document.getElementById('settingsBtn').style.display = 'none';
+            stopPriceFeeds();
+            renderAuthScreen();
+        }
+    });
+
+    async function loadUserData() {
+        try {
+            const doc = await db.collection('members').doc(currentUid).get();
+            if (doc.exists) {
+                currentUserData = doc.data();
+            } else {
+                currentUserData = { role: 'member', tier: 'FREE', notifyPrefs: {} };
+                await db.collection('members').doc(currentUid).set(currentUserData, { merge: true });
+            }
+        } catch(e) {
+            console.error("Error loading user data:", e);
+        }
+    }
+
+    // --- PRICE FEEDS ---
+    function startPriceFeeds() {
+        // Binance WS for Crypto
+        try {
+            binanceWs = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker/ethusdt@ticker');
+            binanceWs.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.s && data.c) {
+                    const sym = data.s.replace('USDT', 'USD');
+                    livePrices[sym] = parseFloat(data.c);
+                    updateConnectionStatus('green');
+                }
+            };
+            binanceWs.onerror = () => updateConnectionStatus('yellow');
+        } catch(e) {
+            console.error("Binance WS error", e);
+        }
+
+        // TwelveData REST for Forex/Indices
+        fetchTwelveDataPrices();
+        twelveDataTimer = setInterval(fetchTwelveDataPrices, 15000);
+    }
+
+    function stopPriceFeeds() {
+        if (binanceWs) binanceWs.close();
+        if (twelveDataTimer) clearInterval(twelveDataTimer);
+        updateConnectionStatus('red');
+    }
+
+    async function fetchTwelveDataPrices() {
+        if (TWELVEDATA_KEY === "PASTE_TWELVEDATA_KEY_HERE") {
+            updateConnectionStatus('yellow');
+            return;
+        }
+        try {
+            const symbols = "EUR/USD,GBP/USD,XAU/USD,NDX,DJI,SPX";
+            const res = await fetch(`https://api.twelvedata.com/price?symbol=${symbols}&apikey=${TWELVEDATA_KEY}`);
+            const data = await res.json();
+            if (data && !data.code) {
+                // If single or multiple
+                if (data.price) {
+                    // Single fallback
+                } else {
+                    for (let key in data) {
+                        livePrices[key.replace('/', '')] = parseFloat(data[key].price);
+                    }
+                }
+                updateConnectionStatus('green');
+            } else {
+                updateConnectionStatus('yellow');
+            }
+        } catch(e) {
+            updateConnectionStatus('yellow');
+        }
+    }
+
+    function updateConnectionStatus(status) {
+        priceSourceStatus = status;
+        const dot = document.getElementById('connectionDot');
+        if (dot) dot.className = `status-dot ${status}`;
+    }
+
+    // --- UI ROUTING ---
+    function renderAuthScreen() {
+        const mc = document.getElementById('mainContent');
+        mc.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; text-align:center;">
+                <h1 style="font-family:Georgia, serif; color:var(--gold); margin-bottom:8px;">TW-HK Portal</h1>
+                <p style="color:var(--ink-dim); font-size:0.85rem; margin-bottom:24px;">Professional Trading Signals & Analytics</p>
+                
+                <div class="card" style="width:100%; text-align:left;">
+                    <div id="authFormError" style="color:var(--red); font-size:0.8rem; margin-bottom:10px; display:none;"></div>
+                    <div class="form-group" id="nameGroup" style="display:none;">
+                        <label>Full Name</label>
+                        <input type="text" id="authName" class="form-control" placeholder="John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="authEmail" class="form-control" placeholder="name@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="authPassword" class="form-control" placeholder="••••••••">
+                    </div>
+                    <button class="btn" id="authSubmitBtn" onclick="handleAuthSubmit()">Sign In</button>
+                    <div style="text-align:center; margin-top:12px; font-size:0.8rem;">
+                        <a href="#" onclick="toggleAuthMode(); return false;" id="authSwitchText" style="color:var(--gold); text-decoration:none;">Don't have an account? Sign Up</a>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    let isSignUpMode = false;
+    function toggleAuthMode() {
+        isSignUpMode = !isSignUpMode;
+        document.getElementById('nameGroup').style.display = isSignUpMode ? 'block' : 'none';
+        document.getElementById('authSubmitBtn').textContent = isSignUpMode ? 'Sign Up' : 'Sign In';
+        document.getElementById('authSwitchText').textContent = isSignUpMode ? 'Already have an account? Sign In' : "Don't have an account? Sign Up";
+    }
+
+    async function handleAuthSubmit() {
+        const email = document.getElementById('authEmail').value.trim();
+        const pass = document.getElementById('authPassword').value.trim();
+        const name = document.getElementById('authName').value.trim();
+        const errDiv = document.getElementById('authFormError');
+        errDiv.style.display = 'none';
+
+        if (!email || !pass) {
+            errDiv.textContent = "Please fill in all fields.";
+            errDiv.style.display = 'block';
+            return;
+        }
+
+        try {
+            if (isSignUpMode) {
+                const cred = await auth.createUserWithEmailAndPassword(email, pass);
+                await db.collection('members').doc(cred.user.uid).set({
+                    name: name || 'Trader',
+                    email: email,
+                    role: 'member',
+                    tier: 'FREE',
+                    notificationsEnabled: false,
+                    notifyPrefs: { newSignal: true, tp1: true, tp2: true, tp3: true, slHit: true, beHit: true }
+                });
+            } else {
+                await auth.signInWithEmailAndPassword(email, pass);
+            }
+        } catch(e) {
+            errDiv.textContent = e.message;
+            errDiv.style.display = 'block';
+        }
+    }
+
+    function renderApp() {
+        if (!currentUserData) return;
+        const mc = document.getElementById('mainContent');
+        
+        const isAdmin = currentUserData.role === 'admin';
+
+        mc.innerHTML = `
+            <div class="nav-tabs">
+                <button class="nav-tab ${activeTab==='FOREX'?'active':''}" onclick="switchTab('FOREX')">Forex & Indices</button>
+                <button class="nav-tab ${activeTab==='CRYPTO'?'active':''}" onclick="switchTab('CRYPTO')">Crypto Futures</button>
+                ${isAdmin ? `<button class="nav-tab ${activeTab==='ADMIN'?'active':''}" onclick="switchTab('ADMIN')">Admin Panel</button>` : ''}
+            </div>
+            <div id="tabContent"></div>
+        `;
+
+        loadTabContent();
+    }
+
+    function switchTab(tab) {
+        activeTab = tab;
+        renderApp();
+    }
+
+    function loadTabContent() {
+        const tc = document.getElementById('tabContent');
+        if (!tc) return;
+
+        if (activeTab === 'ADMIN') {
+            renderAdminView(tc);
+        } else {
+            renderSignalsFeed(tc);
+        }
+    }
+
+    // --- SIGNALS FEED ---
+    function renderSignalsFeed(container) {
+        container.innerHTML = `<div class="loading-spinner">Loading active signals...</div>`;
+        
+        if (unsubscribeSignals) unsubscribeSignals();
+
+        // Get today midnight PKT or all open
+        unsubscribeSignals = db.collection('signals')
+            .orderBy('createdAt', 'desc')
+            .onSnapshot(snapshot => {
+                const signals = [];
+                snapshot.forEach(doc => {
+                    signals.push({ id: doc.id, ...doc.data() });
+                });
+                displaySignalsList(container, signals);
+            }, err => {
+                container.innerHTML = `<div class="loading-spinner">Error loading signals.</div>`;
+            });
+    }
+
+    function displaySignalsList(container, signals) {
+        const filtered = signals.filter(s => {
+            if (activeTab === 'FOREX') return s.market === 'FOREX' || s.market === 'INDICES' || s.market === 'GOLD';
+            if (activeTab === 'CRYPTO') return s.market === 'CRYPTO';
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            container.innerHTML = `<div class="loading-spinner">No active signals found in this category.</div>`;
+            return;
+        }
+
+        container.innerHTML = filtered.map(s => feedCard(s)).join('');
+        // Setup chat listeners for each
+        filtered.forEach(s => setupChatListener(s.id));
+    }
+
+    function feedCard(s) {
+        const tier = currentUserData.tier || 'FREE';
+        const isAdmin = currentUserData.role === 'admin';
+        const hasAccess = isAdmin || tier === 'ALL_VIP' || (tier === 'FOREX_VIP' && s.market !== 'CRYPTO') || (tier === 'CRYPTO_VIP' && s.market === 'CRYPTO') || tier === 'FREE';
+
+        // Check if levels should be blurred
+        const blurClass = (!hasAccess && tier === 'FREE') ? 'blurred' : '';
+
+        // Live price & PnL calculation
+        const symKey = s.pair.replace('/', '');
+        const currentPrice = livePrices[symKey] || s.entry;
+        let pnl = 0;
+        const mult = s.market === 'FOREX' ? 100000 : (s.market === 'GOLD' ? 100 : (s.market === 'CRYPTO' ? 1 : 20));
+        if (s.direction === 'BUY') {
+            pnl = (currentPrice - s.entry) * mult * (s.lot || 0.1);
+        } else {
+            pnl = (s.entry - currentPrice) * mult * (s.lot || 0.1);
+        }
+
+        return `
+            <div class="card" id="signal-card-${s.id}">
+                <div class="signal-header">
+                    <div>
+                        <span style="font-weight:bold; font-size:1rem;">${s.pair}</span>
+                        <span class="badge badge-${s.direction.toLowerCase()}">${s.direction}</span>
+                        <span class="badge badge-market">${s.market}</span>
+                    </div>
+                    <span style="font-size:0.75rem; color:var(--ink-dim);">${s.roadmapStatus || 'PENDING'}</span>
+                </div>
+
+                <div class="grid-levels ${blurClass}">
+                    <div class="level-box"><span>Entry</span><strong>${s.entry}</strong></div>
+                    <div class="level-box"><span>SL</span><strong>${s.sl}</strong></div>
+                    <div class="level-box"><span>TP 1</span><strong>${s.tp1}</strong></div>
+                    <div class="level-box"><span>TP 2</span><strong>${s.tp2}</strong></div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-top:8px;">
+                    <span>Live: <strong>${currentPrice}</strong></span>
+                    <span style="color:${pnl >= 0 ? 'var(--green)' : 'var(--red)'};">PnL: $${pnl.toFixed(2)}</span>
+                </div>
+
+                <div class="chat-section">
+                    <div class="chat-messages" id="chat-msgs-${s.id}"></div>
+                    <div style="display:flex; gap:6px;">
+                        <input type="text" class="form-control" id="chat-input-${s.id}" placeholder="Discuss trade..." onkeydown="if(event.key==='Enter') sendChatMessage('${s.id}')">
+                        <button class="btn" style="width:auto; padding:0 12px;" onclick="sendChatMessage('${s.id}')">Send</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // --- CHAT SYSTEM ---
+    function setupChatListener(signalId) {
+        if (chatListeners[signalId]) return;
+        chatListeners[signalId] = db.collection('signals').doc(signalId).collection('chat')
+            .orderBy('createdAt', 'asc')
+            .onSnapshot(snapshot => {
+                const box = document.getElementById(`chat-msgs-${signalId}`);
+                if (!box) return;
+                let html = '';
+                snapshot.forEach(doc => {
+                    const c = doc.data();
+                    html += `<div class="chat-msg"><span class="author">${c.name}:</span>${c.text}</div>`;
+                });
+                box.innerHTML = html;
+                box.scrollTop = box.scrollHeight;
+            });
+    }
+
+    async function sendChatMessage(signalId) {
+        const input = document.getElementById(`chat-input-${signalId}`);
+        const text = input.value.trim();
+        if (!text) return;
+        try {
+            await db.collection('signals').doc(signalId).collection('chat').add({
+                name: currentUserData.name || 'Trader',
+                text: text,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            input.value = '';
+        } catch(e) {
+            showToast('Failed to send message', true);
+        }
+    }
+
+    // --- ADMIN VIEW ---
+    function renderAdminView(container) {
+        container.innerHTML = `
+            <div class="card">
+                <h3 style="font-size:0.95rem; margin-bottom:12px; color:var(--gold);">Deploy Signal</h3>
+                <div class="form-group">
+                    <label>Quick Parse Text</label>
+                    <textarea class="form-control" id="parseText" placeholder="Paste signal text here..." rows="3"></textarea>
+                    <button class="btn btn-secondary" style="margin-top:6px;" onclick="parseSignalText()">Parse Details</button>
+                </div>
+                <div class="form-group"><label>Pair</label><input type="text" id="sigPair" class="form-control" placeholder="EUR/USD"></div>
+                <div class="form-group"><label>Market</label>
+                    <select id="sigMarket" class="form-control">
+                        <option value="FOREX">FOREX</option>
+                        <option value="GOLD">GOLD</option>
+                        <option value="INDICES">INDICES</option>
+                        <option value="CRYPTO">CRYPTO</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Direction</label>
+                    <select id="sigDir" class="form-control">
+                        <option value="BUY">BUY</option>
+                        <option value="SELL">SELL</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Entry</label><input type="number" step="any" id="sigEntry" class="form-control"></div>
+                <div class="form-group"><label>Stop Loss (SL)</label><input type="number" step="any" id="sigSl" class="form-control"></div>
+                <div class="form-group"><label>Take Profit 1 (TP1)</label><input type="number" step="any" id="sigTp1" class="form-control"></div>
+                <div class="form-group"><label>Take Profit 2 (TP2)</label><input type="number" step="any" id="sigTp2" class="form-control"></div>
+                <div class="form-group"><label>Lot Size</label><input type="number" step="any" id="sigLot" class="form-control" value="0.1"></div>
+                <button class="btn" onclick="postSignal()">Publish Signal</button>
+            </div>
+        `;
+    }
+
+    function parseSignalText() {
+        const text = document.getElementById('parseText').value;
+        // Simple regex parser example
+        const pairMatch = text.match(/([A-Z]{3}\/[A-Z]{3}|[A-Z]{6})/);
+        if (pairMatch) document.getElementById('sigPair').value = pairMatch[1];
+        if (text.toUpperCase().includes('BUY')) document.getElementById('sigDir').value = 'BUY';
+        if (text.toUpperCase().includes('SELL')) document.getElementById('sigDir').value = 'SELL';
+        showToast('Parsed successfully');
+    }
+
+    async function postSignal() {
+        try {
+            const pair = document.getElementById('sigPair').value.trim();
+            const market = document.getElementById('sigMarket').value;
+            const direction = document.getElementById('sigDir').value;
+            const entry = parseFloat(document.getElementById('sigEntry').value);
+            const sl = parseFloat(document.getElementById('sigSl').value);
+            const tp1 = parseFloat(document.getElementById('sigTp1').value);
+            const tp2 = parseFloat(document.getElementById('sigTp2').value);
+            const lot = parseFloat(document.getElementById('sigLot').value) || 0.1;
+
+            if (!pair || isNaN(entry)) {
+                showToast('Invalid signal data', true);
+                return;
+            }
+
+            await db.collection('signals').add({
+                pair, market, direction, entry, sl, tp1, tp2, lot,
+                roadmapStatus: 'ACTIVE',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            showToast('Signal published successfully');
+            switchTab('FOREX');
+        } catch(e) {
+            showToast('Error publishing signal: ' + e.message, true);
+        }
+    }
+
+    // --- SETTINGS & NOTIFICATIONS ---
+    function openSettings() {
+        document.getElementById('settingsModal').classList.add('open');
+        populateSettingsUI();
+    }
+
+    function closeSettings() {
+        document.getElementById('settingsModal').classList.remove('open');
+    }
+
+    function populateSettingsUI() {
+        if (!currentUserData) return;
+        document.getElementById('userInfoSection').innerHTML = `
+            <strong>${currentUserData.name || 'Trader'}</strong><br>
+            <span style="color:var(--ink-dim);">${currentUserData.email}</span><br>
+            Tier: <span style="color:var(--gold);">${currentUserData.tier}</span>
+        `;
+        
+        const prefs = currentUserData.notifyPrefs || {};
+        ['newSignal', 'tp1', 'tp2', 'tp3', 'slHit', 'beHit'].forEach(k => {
+            const el = document.getElementById(`pref-${k}`);
+            if (el) el.checked = prefs[k] !== false;
+        });
+    }
+
+    async function saveNotifPref(key, value) {
+        try {
+            if (!currentUid) return;
+            await db.collection('members').doc(currentUid).set({
+                notifyPrefs: { [key]: value }
+            }, { merge: true });
+            currentUserData.notifyPrefs[key] = value;
+            showToast('Setting saved');
+        } catch(e) {
+            showToast('Failed to save: ' + e.message, true);
+        }
+    }
+
+    async function registerFCM() {
+        try {
+            if (!('Notification' in window)) return;
+            const perm = await Notification.requestPermission();
+            if (perm !== 'granted') {
+                showToast('Notification permission denied', true);
+                return;
+            }
+            const messaging = firebase.messaging();
+            const token = await messaging.getToken({ vapidKey: VAPID_KEY });
+            if (token && currentUid) {
+                await db.collection('members').doc(currentUid).update({
+                    fcmTokens: firebase.firestore.FieldValue.arrayUnion(token),
+                    notificationsEnabled: true
+                });
+                document.getElementById('fcmTokenInfo').textContent = 'FCM Token: Registered ✓';
+                showToast('Notifications registered');
+            }
+        } catch(e) {
+            showToast('Notification setup failed: ' + e.message, true);
+        }
+    }
+
+    function saveRiskSettings() {
+        // Local risk persistence mockup
+        showToast('Risk settings saved');
+    }
+
+    function signOut() {
+        auth.signOut();
+        closeSettings();
+    }
+</script>
+
+</body>
+</html>
+</html>
