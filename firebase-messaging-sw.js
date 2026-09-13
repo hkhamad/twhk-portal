@@ -1,3 +1,6 @@
+// Firebase Cloud Messaging Service Worker
+// This file MUST be at the root of your domain
+
 importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js');
 
@@ -12,18 +15,33 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// Handle background messages (when app is closed or in background)
 messaging.onBackgroundMessage((payload) => {
+  console.log('[SW] Background message:', payload);
   const title = (payload.notification && payload.notification.title) || 'TW-HK Signal';
-  const body = (payload.notification && payload.notification.body) || 'New signal';
-  self.registration.showNotification(title, {
-    body: body,
+  const options = {
+    body: (payload.notification && payload.notification.body) || 'New signal update',
     icon: '/icon-192.png',
     badge: '/icon-192.png',
-    vibrate: [200, 100, 200]
-  });
+    vibrate: [200, 100, 200],
+    tag: payload.data && payload.data.signalId ? payload.data.signalId : 'tw-hk-signal',
+    data: payload.data || {},
+    requireInteraction: true
+  };
+  return self.registration.showNotification(title, options);
 });
 
+// Handle notification click — open the app
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  event.waitUntil(clients.openWindow('/'));
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) return clients.openWindow('/');
+    })
+  );
 });
